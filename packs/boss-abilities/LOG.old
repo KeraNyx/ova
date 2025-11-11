@@ -1,0 +1,5 @@
+2025/11/10-21:06:51.571 cdc Delete type=3 #1
+2025/11/10-21:10:42.653 548 Level-0 table #5: started
+2025/11/10-21:10:42.669 548 Level-0 table #5: 1606 bytes OK
+2025/11/10-21:10:42.674 548 Delete type=0 #3
+2025/11/10-21:10:42.700 548 Manual compaction at level-0 from '!items!A9WDF119GjGqvktq' @ 72057594037927935 : 1 .. '!items!utweYJzqgxY3HNvJ' @ 0 : 0; will stop at (end)
