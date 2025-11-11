@@ -1,5 +1,7 @@
 An unofficial implementation of OVA (Open Versatile Anime Role-Playing Game) Game system for FoundryVTT.
 
+This was made by Lucius The Mage originally, copied to try to update and adjust it!
+
 ### Implememnted Features:
 1. Fullty working Character/NPC sheets with ability to add attacks and spells
 2. Almost all combat math (Attack, Defence, Counters, Defences, Armor, Vulnerability/Weakness, etc.)

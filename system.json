@@ -1,9 +1,9 @@
 {
     "name": "ova",
     "title": "OVA",
-    "description": "System for playing Open Versitale Anime Role-Playing Game (OVA)",
-    "author": "Lucius The Mage",
-    "version": "0.3.0",
+    "description": "System for playing Open Versatile Anime Role-Playing Game (OVA)",
+    "author": "Deathkitten",
+    "version": "0.0.1",
     "minimumCoreVersion": "9",
     "compatibleCoreVersion": "9.269",
     "esmodules": [
@@ -72,8 +72,8 @@
         }
     ],
     "socket": true,
-    "url": "https://gitlab.com/lucius-the-mage/ova",
-    "manifest": "https://gitlab.com/lucius-the-mage/ova/-/raw/master/system.json",
-    "download": "https://gitlab.com/lucius-the-mage/ova/-/archive/master/ova-master.zip",
+    "url": "https://github.com/KeraNyx/OVAFoundry",
+    "manifest": "https://github.com/KeraNyx/OVAFoundry/-/raw/master/system.json",
+    "download": "https://github.com/KeraNyx/OVAFoundry/-/archive/master/ova-master.zip",
     "license": "LICENSE.txt"
 }
