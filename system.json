@@ -1,12 +1,12 @@
 {
-    "name": "ova",
+    "id": "ova",
     "title": "OVA Foundry",
     "description": "System for playing Open Versatile Anime Role-Playing Game (OVA)",
     "author": "Deathkitten",
     "version": "0.1",
     "compatibility": {
-    "minimum": 9,
-    "verified": "9"
+        "minimum": 9,
+        "verified": "9"
     },
     "esmodules": [
         "ova.js"
@@ -73,7 +73,7 @@
             "path": "lang/ru.json"
         }
     ],
-    "socket": false,
+    "socket": true,
     "url": "https://github.com/KeraNyx/ova",
     "manifest": "https://github.com/KeraNyx/ova/-/raw/master/system.json",
     "download": "https://github.com/KeraNyx/ova/-/archive/master/ova-master.zip",
