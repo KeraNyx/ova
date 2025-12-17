@@ -78,7 +78,7 @@
     ],
     "socket": true,
     "url": "https://github.com/KeraNyx/ova",
-    "manifest": "https://github.com/KeraNyx/ova/-/raw/master/system.json",
-    "download": "https://github.com/KeraNyx/ova/-/archive/master/ova-master.zip",
+    "manifest": "https://github.com/KeraNyx/ova/blob/master/system.json",
+    "download": "https://github.com/KeraNyx/ova/archive/master/ova-master.zip",
     "license": "LICENSE.txt"
 }
