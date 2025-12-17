@@ -1,168 +1,227 @@
 export default class OVAEffect {
-    data = {};
-    item = null;
-    constructor(item, data) {
-        /**
-         * {
-         * type: "apply-changes|apply-active-effect",
-         * target: actor, // the target of the effect (only active effect)
-         * key: "str|dex|con|int|wis|cha",
-         * mode: CONST.ACTIVE_EFFECT_MODES,
-         * priority: 0, // only for active effects
-         * value: "1",
-         * duration: "1", // duration in rounds,only for active effects
-         * }
-         */
-        this.data = data;
-        this.item = item;
+
+  data = {};
+  item = null;
+
+  constructor(item, data) {
+    this.item = item;
+    this.data = data;
+  }
+
+  /* -------------------------------------------- */
+  /*  Static Configuration                        */
+  /* -------------------------------------------- */
+
+  static TYPES = {
+    "apply-changes": "OVA.Effects.Types.ApplyChanges",
+    "apply-active-effect": "OVA.Effects.Types.ApplyActiveEffect",
+  };
+
+  static TARGETS = {
+    self: "OVA.Effects.Targets.Self",
+    target: "OVA.Effects.Targets.Target",
+  };
+
+  static OVER_TIME_MODES = {
+    "each-round": "OVA.Effects.OverTimeModes.EachRound",
+    once: "OVA.Effects.OverTimeModes.Once",
+  };
+
+  /* -------------------------------------------- */
+  /*  Apply Effect (Derived Data Phase)           */
+  /* -------------------------------------------- */
+
+  apply(targetData) {
+    const {
+      type,
+      key,
+      mode,
+      keyValue,
+      value,
+      priority
+    } = this.data;
+
+    const itemSystem = this.item.system ?? {};
+    const sign = ["weakness", "flaw"].includes(this.item.type) ? -1 : 1;
+
+    targetData.item = itemSystem;
+    targetData.level = sign * (itemSystem.level?.value ?? 0);
+
+    const resolvedKeyValue = keyValue ?? itemSystem.flavor ?? "";
+
+    if (!targetData.changes) targetData.changes = [];
+
+    /* ---------------- APPLY CHANGES ---------------- */
+
+    if (type === "apply-changes") {
+      if (value === "" || value === undefined) return;
+
+      const evaluatedValue = Number.fromString(
+        OVAEffect._safeEval(targetData, value)
+      );
+
+      targetData.changes.push({
+        source: {
+          item: this.item,
+          name: this.item.name,
+          type: this.item.type
+        },
+        key,
+        mode,
+        value: evaluatedValue,
+        keyValue: resolvedKeyValue,
+        priority
+      });
+
+      OVAEffect.applyEffectChanges(
+        { key, mode, value: evaluatedValue, keyValue: resolvedKeyValue },
+        targetData
+      );
     }
 
-    static TYPES = {
-        "apply-changes": "OVA.Effects.Types.ApplyChanges",
-        "apply-active-effect": "OVA.Effects.Types.ApplyActiveEffect",
+    /* -------------- APPLY ACTIVE EFFECT ------------ */
+
+    if (type === "apply-active-effect") {
+      if (!targetData.activeEffects) targetData.activeEffects = [];
+
+      targetData.activeEffects.push({
+        source: {
+          uuid: this.item.uuid,
+          name: this.item.name,
+          type: this.item.type,
+          level: targetData.level
+        },
+        ...this.data
+      });
+    }
+  }
+
+  /* -------------------------------------------- */
+  /*  Immediate Change Application                */
+  /* -------------------------------------------- */
+
+  static applyEffectChanges(effect, targetData) {
+    const { key, mode, value, keyValue = "" } = effect;
+    const resolvedKey = key.replace(/\?/g, keyValue);
+
+    let current = foundry.utils.getProperty(targetData, resolvedKey) ?? 0;
+
+    switch (Number(mode)) {
+      case CONST.ACTIVE_EFFECT_MODES.ADD:
+        current += value;
+        break;
+      case CONST.ACTIVE_EFFECT_MODES.MULTIPLY:
+        current *= value;
+        break;
+      case CONST.ACTIVE_EFFECT_MODES.DOWNGRADE:
+        current = Math.min(current, value);
+        break;
+      case CONST.ACTIVE_EFFECT_MODES.UPGRADE:
+        current = Math.max(current, value);
+        break;
+      case CONST.ACTIVE_EFFECT_MODES.OVERRIDE:
+        current = value;
+        break;
     }
 
-    static TARGETS = {
-        "self": "OVA.Effects.Targets.Self",
-        "target": "OVA.Effects.Targets.Target",
-    }
+    foundry.utils.setProperty(targetData, resolvedKey, current);
+  }
 
-    static OVER_TIME_MODES = {
-        "each-round": "OVA.Effects.OverTimeModes.EachRound",
-        "once": "OVA.Effects.OverTimeModes.Once",
-    }
+  /* -------------------------------------------- */
+  /*  ActiveEffect Document Builder               */
+  /* -------------------------------------------- */
 
+  static createActiveEffect(effect, rollData) {
+    rollData.item = effect.source.item ?? {};
+    rollData.level = effect.source.level ?? 0;
 
-    apply(data) {
-        // do not remove all of them are used in ActiveEffecs!
-        const { type, target, key, mode, keyValue, duration, value, priority } = this.data;
-        data.item = this.item.data || {};
-        const sign = this.item.data.type == "weakness" || this.item.data.type == "flaw" ? -1 : 1;
-        data.level = sign * this.item.data.level?.value || 0;
-        const finalKeyValue = keyValue || this.item.data.flavor || "";
+    const evaluatedValue = effect.value !== ""
+      ? Number.fromString(OVAEffect._safeEval(rollData, effect.value))
+      : "";
 
-        if (!data.changes) data.changes = [];
-        if (type === 'apply-changes') {
-            if (!value) return;
-            let evaluatedValue = Number.fromString(OVAEffect._safeEval(data, value));
+    const resolvedKey = effect.key.replace(/\?/g, effect.keyValue ?? "");
 
-            data.changes.push({
-                source: {
-                    data: this.item,
-                    name: this.item.name,
-                    type: this.item.type
-                }, key: key, mode: mode, value: evaluatedValue, keyValue: finalKeyValue
-            });
-            OVAEffect.applyEffectChanges({ key, mode, value: evaluatedValue, keyValue: finalKeyValue }, data);
-        } else if (type === 'apply-active-effect') {
-            if (!data.activeEffects) data.activeEffects = [];
-            data.activeEffects.push({
-                source: {
-                    uuid: this.item.uuid,
-                    data: this.item.data,
-                    name: this.item.name,
-                    type: this.item.type,
-                    level: data.level
-                },
-                ...this.data,
-            });
-        }
-    }
-
-    static applyEffectChanges(effect, data) {
-        const { key, mode, value, keyValue = '' } = effect;
-        const fullKey = key.replace(/\?/g, effect.keyValue);
-
-        let current = foundry.utils.getProperty(data, fullKey) || 0;
-        switch (parseInt(mode)) {
-            case CONST.ACTIVE_EFFECT_MODES.ADD:
-                current = current + value;
-                break;
-            case CONST.ACTIVE_EFFECT_MODES.MULTIPLY:
-                current = current * value;
-                break;
-            case CONST.ACTIVE_EFFECT_MODES.DOWGRADE:
-                current = Math.min(current, value);
-                break;
-            case CONST.ACTIVE_EFFECT_MODES.UPGRADE:
-                current = Math.max(current, value);
-                break;
-            case CONST.ACTIVE_EFFECT_MODES.OVERRIDE:
-                current = value;
-                break;
-        }
-        foundry.utils.setProperty(data, fullKey, current);
-    }
-
-    static createActiveEffect(effect, data) {
-        data.item = effect.source.data;
-        data.level = effect.source.level;
-
-        const evaluatedValue = effect.value ? Number.fromString(OVAEffect._safeEval(data, effect.value)) : "";
-        // replace ? in key with keyValue
-        const key = effect.key.replace(/\?/g, effect.keyValue);
-        const effectData = {
-            label: effect.source.name,
-            origin: effect.source.uuid,
-            active: effect.active,
-            changes: [{
-                key: key,
-                mode: effect.mode,
-                value: evaluatedValue,
-                priority: effect.priority
-            }],
-            duration: {
-                rounds: effect.duration,
-            }
-        }
-
-        // checking if all overTime values are present
-        if (effect.overTime && effect.overTime.when && effect.overTime.key && effect.overTime.value) {
-            const evaluatedoverTimeValue = effect.overTime.value ? Number.fromString(OVAEffect._safeEval(data, effect.overTime.value)) : "";
-            const overTimeKey = effect.overTime.key?.replace(/\?/g, effect.overTime.keyValue);
-            effectData.flags = {};
-            effectData.flags[effect.overTime.when] = {
-                key: overTimeKey,
-                mode: effect.overTime.mode,
-                value: evaluatedoverTimeValue,
-            }
-        }
-
-        return effectData;
-    }
-
-    /** shamelesly stolen and modified from Roll.safeEval */
-    static _safeEval(data, expression) {
-        let result;
-        try {
-            // replacing all @ symbols with "data"
-            expression = expression.replace(/@/g, 'data.');
-            const src = 'with (sandbox) { return ' + expression + '; }';
-            const evl = new Function('sandbox', 'data', src);
-            result = evl({ ...Roll.MATH_PROXY }, data);
-        } catch {
-            result = undefined;
-        }
-        if (!Number.isNumeric(result)) {
-            throw new Error(`Effect.safeEval produced a non-numeric result from expression "${expression}" (${result})`);
-        }
-        return result;
+    const aeData = {
+      label: effect.source.name,
+      origin: effect.source.uuid,
+      disabled: false,
+      changes: [{
+        key: resolvedKey,
+        mode: effect.mode,
+        value: evaluatedValue,
+        priority: effect.priority ?? 0
+      }],
+      duration: {
+        rounds: effect.duration ?? null
+      },
+      flags: {}
     };
 
-    static degaultObject() {
-        return {
-            type: "apply-changes",
-            target: "self",
-            key: "",
-            mode: CONST.ACTIVE_EFFECT_MODES.ADD,
-            priority: 0,
-            value: "",
-            overTime: {
-                when: "each-round",
-                key: "",
-                mode: CONST.ACTIVE_EFFECT_MODES.ADD,
-                value: "",
-            }
-        }
+    /* -------- Over-Time Effect Support -------- */
+
+    if (effect.overTime?.when && effect.overTime.key) {
+      const otValue = effect.overTime.value !== ""
+        ? Number.fromString(OVAEffect._safeEval(rollData, effect.overTime.value))
+        : "";
+
+      aeData.flags[effect.overTime.when] = {
+        key: effect.overTime.key.replace(/\?/g, effect.overTime.keyValue ?? ""),
+        mode: effect.overTime.mode,
+        value: otValue
+      };
     }
+
+    return aeData;
+  }
+
+  /* -------------------------------------------- */
+  /*  Safe Expression Evaluation                  */
+  /* -------------------------------------------- */
+
+  static _safeEval(data, expression) {
+    let result;
+
+    try {
+      expression = expression.replace(/@/g, "data.");
+      const fn = new Function(
+        "sandbox",
+        "data",
+        `with (sandbox) { return ${expression}; }`
+      );
+      result = fn({ ...Roll.MATH_PROXY }, data);
+    } catch {
+      result = undefined;
+    }
+
+    if (!Number.isNumeric(result)) {
+      throw new Error(
+        `OVAEffect.safeEval produced a non-numeric result: ${expression} → ${result}`
+      );
+    }
+
+    return result;
+  }
+
+  /* -------------------------------------------- */
+  /*  Default Effect Template                    */
+  /* -------------------------------------------- */
+
+  static defaultObject() {
+    return {
+      type: "apply-changes",
+      target: "self",
+      key: "",
+      keyValue: "",
+      mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+      priority: 0,
+      value: "",
+      overTime: {
+        when: "each-round",
+        key: "",
+        keyValue: "",
+        mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+        value: ""
+      }
+    };
+  }
 }
