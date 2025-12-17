@@ -301,7 +301,8 @@ export default class OVAItem extends Item {
           options
         });
 
-        /*return Dialog.prompt({
+        /* OLD CODE
+        return Dialog.prompt({
             title: title,
             content: html,
             label: title,

@@ -392,7 +392,8 @@ export default class OVACharacter extends Actor {
           options
         });
 
-        /*return Dialog.prompt({
+        /* OLD CODE
+        return Dialog.prompt({
             title: title,
             content: html,
             label: title,
