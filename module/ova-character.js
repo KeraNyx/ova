@@ -17,14 +17,14 @@ export default class OVACharacter extends Actor {
     data.img ??= "icons/svg/mystery-man-black.svg";
 
     if (subtype === "npc") {
-        foundry.utils.setProperty(
-            data,
-            "flags.core.sheetClass",
-            "ova.OVANPCSheet"
-        );
+        data.flags ??= {};
+        data.flags.core ??= {};
+        data.flags.core.sheetClass = "ova.OVANPCSheet";
     }
 
-    return await super.create(data, options);
+    // MUST return the created actor for it to appear
+    const actor = await super.create(data, options);
+    return actor;
 }
 
   async createAttack() {
@@ -258,17 +258,18 @@ export default class OVACharacter extends Actor {
 
         foundry.utils.mergeObject(data, fd.toObject(), { inplace: true });
 
-        const subtype = data.type;
-        data.type = "character";
-        delete data.folder;
+       const subtype = data.type;
+       data.type = "character"; // system type
+       delete data.folder;      // optional
 
-        return await this.create(data, {
-          parent,
-          pack,
-          render: true,
-          subtype
-        });
-      }
+      return await this.create(data, {
+        parent,
+        pack,
+        renderSheet: true, // ensures sheet opens
+        subtype
+      });
+    }
+
     });
   }
 }
