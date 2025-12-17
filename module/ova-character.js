@@ -368,6 +368,31 @@ export default class OVACharacter extends Actor {
 
         // Render the confirmation dialog window
         return Dialog.prompt({
+          title,
+          content: html,
+          label: title,
+          callback: html => {
+            const form = html[0].querySelector("form");
+            const fd = new FormDataExtended(form);
+
+            foundry.utils.mergeObject(
+              data,
+              foundry.utils.expandObject(fd.object),
+              { inplace: true }
+            );
+
+            if (!data.folder) delete data.folder;
+
+            const subtype = data.type;
+            data.type = "character";
+
+            return this.create(data, { parent, pack, renderSheet: true, subtype });
+          },
+          rejectClose: false,
+          options
+        });
+
+        /*return Dialog.prompt({
             title: title,
             content: html,
             label: title,
@@ -382,6 +407,6 @@ export default class OVACharacter extends Actor {
             },
             rejectClose: false,
             options: options
-        });
+        });*/
     }
 }

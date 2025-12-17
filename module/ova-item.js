@@ -279,6 +279,29 @@ export default class OVAItem extends Item {
 
         // Render the confirmation dialog window
         return Dialog.prompt({
+          title,
+          content: html,
+          label: title,
+          callback: html => {
+            const form = html[0].querySelector("form");
+            const fd = new FormDataExtended(form);
+
+            foundry.utils.mergeObject(
+              data,
+              foundry.utils.expandObject(fd.object),
+              { inplace: true }
+            );
+
+            if (!data.folder) delete data.folder;
+            if (types.length === 1) data.type = types[0];
+
+            return this.create(data, { parent, pack, renderSheet: true });
+          },
+          rejectClose: false,
+          options
+        });
+
+        /*return Dialog.prompt({
             title: title,
             content: html,
             label: title,
@@ -292,6 +315,6 @@ export default class OVAItem extends Item {
             },
             rejectClose: false,
             options: options
-        });
+        });*/
     }
 }
