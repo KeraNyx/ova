@@ -14,16 +14,19 @@ export default class OVACombatMessage extends ChatMessage {
       rollResults: await roll.render({ isPrivate: false, template: "systems/ova/templates/chat/roll.html" }),
     };
 
-    rollData.fatiguing = !!attack?.data.ovaFlags?.fatiguing;
-    rollData.affinity = attack?.data.affinity;
+    rollData.fatiguing = !!attack?.system?.ovaFlags?.fatiguing;
+    rollData.affinity = attack?.system?.affinity;
 
-    const html = await renderTemplate("systems/ova/templates/chat/combat-message.html", templateData);
+    const html = await foundry.applications.handlebars.renderTemplate(
+      "systems/ova/templates/chat/combat-message.html",
+      templateData
+    );
 
     const msgData = {
-      type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-      user: game.user.id, // V16-safe
+      type: CONST.CHAT_MESSAGE_STYLES.ROLL,
+      user: game.user.id,
       flavor: game.i18n.localize(`OVA.Roll.${rollData.type.capitalize()}`),
-      roll,
+      rolls: [roll],
       content: html,
       speaker: ChatMessage.getSpeaker({ actor: speaker }),
       flags: { "roll-data": rollData, attack: attackData },
@@ -51,7 +54,6 @@ export default class OVACombatMessage extends ChatMessage {
       if (diff <= 1) originalDice.modifiers[0] = "khs";
 
       if (diff >= 1) {
-        // Remove lowest dice
         let toRemove = dramaDice.results.length + 1;
         originalDice.results.sort((a, b) => a.result - b.result);
         originalDice.results.splice(0, toRemove);
@@ -74,13 +76,16 @@ export default class OVACombatMessage extends ChatMessage {
     originalRoll.roll._formula = `${originalDice.results.length}d6${originalDice.modifiers[0]}`;
     originalRoll.roll._total = originalRoll.roll._evaluateTotal();
 
-    const attack = originalRoll.data.flags["attack"];
+    const attack = originalRoll.flags?.["attack"];
     const templateData = {
       attack,
       rollResults: await originalRoll.roll.render({ isPrivate: false })
     };
 
-    originalRoll.data.content = await renderTemplate("systems/ova/templates/chat/combat-message.html", templateData);
+    originalRoll.content = await foundry.applications.handlebars.renderTemplate(
+      "systems/ova/templates/chat/combat-message.html",
+      templateData
+    );
     return originalRoll;
   }
 }

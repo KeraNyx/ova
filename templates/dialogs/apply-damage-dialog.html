@@ -62,7 +62,7 @@
     </table>
     {{/if}}
 
-    {{#if target.data.hasResistances}}
+    {{#if target.system.hasResistances}}
     <h2>{{localize 'OVA.ApplyDamageDialog.TargetRestances'}}</h2>
     <table class="ova">
         <thead>
@@ -73,7 +73,7 @@
             </tr>
         </thead>
         <tbody>
-            {{#each target.data.resistances as |resistance name|}}
+            {{#each target.system.resistances as |resistance name|}}
             <tr>
                 <td>
                     <b>{{name}} {{signedValue resistance}}</b>
@@ -95,11 +95,11 @@
     {{/if}}
     <div class="dialog-buttons">
         {{#if (lte rollData.attack.damage 0)}}
-        <button class="take-damage damage-color" data-button="apply">
+        <button type="button" class="take-damage damage-color" data-action="takeDamage">
             {{localize 'OVA.ApplyDamage'}} <b>({{abs rollData.attack.damage}})</b>
         </button>
         {{else}}
-        <button class="take-damage heal-color" data-button="apply">
+        <button type="button" class="take-damage heal-color" data-action="takeDamage">
             {{localize 'OVA.ApplyHeal'}} <b>({{abs rollData.attack.damage}})</b>
         </button>
         {{/if}}

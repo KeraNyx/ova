@@ -29,6 +29,9 @@ Hooks.once("init", async function () {
   CONFIG.Combatant.documentClass = OVACombatant;
   CONFIG.ActiveEffect.documentClass = OVAActiveEffect;
 
+  // Replace combat tracker
+  CONFIG.ui.combat = CombatTracker;
+
   CONFIG.Dice.types = [OVADie];
   CONFIG.Dice.terms["d"] = OVADie;
 
@@ -37,9 +40,9 @@ Hooks.once("init", async function () {
   CONFIG.Actor.typeLabels["character"] = "OVA.Character.Name";
   CONFIG.Actor.typeLabels["npc"] = "OVA.NPC.Name";
 
-  // Unregister core sheets using V2 namespace
-  foundry.documents.collections.Items.unregisterSheet("core", foundry.appv1.sheets.ItemSheet);
-  foundry.documents.collections.Actors.unregisterSheet("core", foundry.appv1.sheets.ActorSheet);
+  // Unregister core sheets
+  foundry.documents.collections.Items.unregisterSheet("core", foundry.applications.sheets.ItemSheetV2);
+  foundry.documents.collections.Actors.unregisterSheet("core", foundry.applications.sheets.ActorSheetV2);
 
   // Register Item sheets
   foundry.documents.collections.Items.registerSheet("ova", OVAAbilitySheet, { types: ["ability"], label: "OVA.Ability.Name" });
@@ -50,6 +53,9 @@ Hooks.once("init", async function () {
   // Register Actor sheets
   foundry.documents.collections.Actors.registerSheet("ova", OVACharacterSheet, { makeDefault: true, label: "OVA.Sheets.Character" });
   foundry.documents.collections.Actors.registerSheet("ova", OVANPCSheet, { label: "OVA.Sheets.NPC" });
+
+  // Configure status effects
+  configureStatusEffects();
 
   // Initialize socket
   Socket.initialize();
@@ -65,13 +71,10 @@ Hooks.once("init", async function () {
 
   // System settings
   registerSystemSettings();
-
-  // Replace combat tracker
-  game.CombatTracker = CombatTracker;
 });
 
 Hooks.on("ready", async function () {
-  canvas.hud.token = new OVATokenHUD();
+  if (canvas.hud) canvas.hud.token = new OVATokenHUD();
 });
 
 async function preloadTemplates() {
@@ -94,7 +97,6 @@ function registerSystemSettings() {
   });
 }
 
-// Updated to renderChatMessageHTML
 Hooks.on("renderChatMessageHTML", (message, html, data) => {
   if (message.roll) {
     chat.listenToCombatRolls(message, html, data);
@@ -105,29 +107,30 @@ Hooks.on("chatMessage", (log, content, message) => {
   return chat.listenToCommands(log, content, message);
 });
 
-Hooks.on("renderChatLog", (html, options) => {
-  chat.chatListeners(html, options);
+Hooks.on("renderChatLog", (app, html, options) => {
+  chat.chatListeners(app, html, options);
 });
 
 Hooks.on('preUpdateCombat', async (combat, updateData, options, userId) => {
   if (!game.user.isGM) return;
 
   for (let turn of combat.turns) {
-    const actor = turn.actor ?? turn.token.actor;
+    const actor = turn.actor ?? turn.token?.actor;
     if (!actor) continue;
 
-    for (let effect of actor.data.effects) {
-      if (effect.data.flags["each-round"]) {
-        if (updateData.turn === undefined ||
-          (effect.data.duration.startTurn === updateData.turn &&
-            (updateData.turn > combat.turn || updateData.round > combat.round))) {
+    for (let effect of actor.effects) {
+      const flags = effect.flags;
+      if (!flags["each-round"]) continue;
 
-          const overTimeEffect = effect.data.flags["each-round"];
-          const newData = { data: foundry.utils.deepClone(actor.data.data) };
-          OVAEffect.applyEffectChanges(overTimeEffect, newData);
-          await actor.update(newData);
-          await actor.sheet?.refreshActiveEffects(effect);
-        }
+      if (updateData.turn === undefined ||
+        (effect.duration.startTurn === updateData.turn &&
+          (updateData.turn > combat.turn || updateData.round > combat.round))) {
+
+        const overTimeEffect = flags["each-round"];
+        const newData = { system: foundry.utils.deepClone(actor.system) };
+        OVAEffect.applyEffectChanges(overTimeEffect, newData);
+        await actor.update(newData);
+        await actor.sheet?.refreshActiveEffects(effect);
       }
     }
 

@@ -146,7 +146,7 @@ export default class OVAItem extends Item {
     }
 
     this.ovaEffects
-      .sort((a, b) => a.data.priority - b.data.priority)
+      .sort((a, b) => a.priority - b.priority)
       .forEach(e => e.apply(this));
   }
 
@@ -186,7 +186,9 @@ export default class OVAItem extends Item {
     data.level.total = data.level.value + data.level.mod;
   }
 
-  async _preDelete() {
+  async _preDelete(options, user) {
+    await super._preDelete(options, user);
+
     if (this.system.perks?.length) {
       await this.actor?.deleteEmbeddedDocuments("Item", this.system.perks);
     }
@@ -210,38 +212,35 @@ export default class OVAItem extends Item {
     const label = game.i18n.localize(this.metadata.label);
     const title = game.i18n.format("DOCUMENT.Create", { type: label });
 
-    const html = await renderTemplate("templates/sidebar/document-create.html", {
-      name: data.name ?? game.i18n.format("DOCUMENT.New", { type: label }),
-      folder: data.folder,
-      folders,
-      hasFolders: folders.length > 0,
-      type: data.type ?? types[0],
-      types: Object.fromEntries(
-        types.map(t => [t, t])
-      ),
-      hasTypes: types.length > 1
-    });
+    const html = await foundry.applications.handlebars.renderTemplate(
+      "templates/sidebar/document-create.html", {
+        name: data.name ?? game.i18n.format("DOCUMENT.New", { type: label }),
+        folder: data.folder,
+        folders,
+        hasFolders: folders.length > 0,
+        type: data.type ?? types[0],
+        types: Object.fromEntries(types.map(t => [t, t])),
+        hasTypes: types.length > 1
+      }
+    );
 
-    return await Dialog.prompt({
-      title,
+    return foundry.applications.api.DialogV2.prompt({
+      window: { title },
       content: html,
-      label: title,
       rejectClose: false,
-      options,
-      callback: async (html) => {
-        const form = html[0].querySelector("form");
-        const fd = new FormDataExtended(form);
+      ok: {
+        label: title,
+        callback: async (event, button, dialog) => {
+          const form = button.form;
+          const fd = new FormDataExtended(form);
 
-        foundry.utils.mergeObject(data, fd.toObject(), { inplace: true });
+          foundry.utils.mergeObject(data, fd.toObject(), { inplace: true });
 
-        if (!data.folder) delete data.folder;
-        if (types.length === 1) data.type = types[0];
+          if (!data.folder) delete data.folder;
+          if (types.length === 1) data.type = types[0];
 
-        return await this.create(data, {
-          parent,
-          pack,
-          render: true
-        });
+          return await this.create(data, { parent, pack, render: true });
+        }
       }
     });
   }

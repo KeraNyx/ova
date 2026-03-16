@@ -12,7 +12,6 @@ export default class OVACombatant extends Combatant {
       rollValue = 2 - rollValue;
     }
 
-    // Create dice roll
     const formula = negativeDice ? `${rollValue}d6kl` : `${rollValue}d6khs`;
     return new Roll(formula);
   }
@@ -20,7 +19,7 @@ export default class OVACombatant extends Combatant {
   /** @override */
   async rollInitiative({ chatMessage = true, createCombatants = false } = {}) {
     const roll = this.initiativeRoll;
-    await roll.evaluate({ async: true });
+    await roll.evaluate();
     return super.rollInitiative({ formula: roll.total, chatMessage, createCombatants });
   }
 }

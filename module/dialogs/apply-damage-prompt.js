@@ -1,7 +1,7 @@
 import OVAEffect from "../effects/ova-effect.js";
 import Socket from "../sockets/socket.js";
 
-export default class ApplyDamagePrompt extends Application {
+export default class ApplyDamagePrompt extends foundry.applications.api.ApplicationV2 {
   constructor({ effects, rollData, targets, attacker }) {
     super({});
     this.rollData = rollData;
@@ -26,58 +26,78 @@ export default class ApplyDamagePrompt extends Application {
     }
   }
 
-  /** @override */
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ["ova", "dialog"],
-      template: "systems/ova/templates/dialogs/apply-damage-dialog.html",
-      width: 500,
-      height: "auto",
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "dialog"],
+    position: { width: 500, height: "auto" },
+    window: {
       resizable: true,
-      title: game.i18n.localize("OVA.ApplyDamage"),
-    });
-  }
+      title: "OVA.ApplyDamage"
+    },
+    actions: {
+      takeDamage: ApplyDamagePrompt._onTakeDamage
+    }
+  };
 
-  /** @override */
-  getData() {
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/dialogs/apply-damage-dialog.html"
+    }
+  };
+
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
     this._prepareData();
-    return {
-      effects: this.effects,
-      target: this.rollData.attack.dx >= 0 ? this.targets[0] : undefined,
-      resistances: this.resistances,
-      rollData: this.rollData,
-      affinity: this.affinity,
-    };
+
+    context.effects = this.effects;
+    context.target = this.rollData.attack.dx >= 0 ? this.targets[0] : undefined;
+    context.resistances = this.resistances;
+    context.rollData = this.rollData;
+    context.affinity = this.affinity;
+
+    return context;
   }
 
-  activateListeners(html) {
-    html.querySelectorAll(".effect-active").forEach(el =>
-      el.addEventListener("change", this._onSelfEffectActiveChange.bind(this))
-    );
-    html.querySelectorAll(".effect-duration").forEach(el =>
-      el.addEventListener("change", this._onSelfEffectDurationChange.bind(this))
-    );
-    html.querySelectorAll(".affected").forEach(el =>
-      el.addEventListener("change", this._onAffectedChange.bind(this))
-    );
-    html.querySelectorAll(".can-heal").forEach(el =>
-      el.addEventListener("change", this._onCanHealChange.bind(this))
-    );
-    html.querySelectorAll(".take-damage").forEach(el =>
-      el.addEventListener("click", this._takeDamage.bind(this))
-    );
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
+
+    this.element.querySelectorAll(".effect-active")
+      .forEach(el => el.addEventListener("change", this._onSelfEffectActiveChange.bind(this)));
+
+    this.element.querySelectorAll(".effect-duration")
+      .forEach(el => el.addEventListener("change", this._onSelfEffectDurationChange.bind(this)));
+
+    this.element.querySelectorAll(".affected")
+      .forEach(el => el.addEventListener("change", this._onAffectedChange.bind(this)));
+
+    this.element.querySelectorAll(".can-heal")
+      .forEach(el => el.addEventListener("change", this._onCanHealChange.bind(this)));
+
+    this.element.querySelectorAll(".take-damage")
+      .forEach(el => el.addEventListener("click", this._takeDamage.bind(this)));
   }
 
+  /** -------------------------------------------- */
+  /** Change Handlers                              */
+  /** -------------------------------------------- */
   _onAffectedChange(e) {
     const name = e.currentTarget.dataset.resName;
     this.resistances[name].affected = e.currentTarget.checked;
-    this.render(false);
+    this.render();
   }
 
   _onCanHealChange(e) {
     const name = e.currentTarget.dataset.resName;
     this.resistances[name].canHeal = e.currentTarget.checked;
-    this.render(false);
+    this.render();
   }
 
   _onSelfEffectActiveChange(e) {
@@ -95,6 +115,9 @@ export default class ApplyDamagePrompt extends Application {
     this.rawEffects[type][index].duration = rounds;
   }
 
+  /** -------------------------------------------- */
+  /** Data Preparation                             */
+  /** -------------------------------------------- */
   _prepareData() {
     const damage = this.rollData.attack.dx >= 0
       ? this._calculateDamage(this.targets[0], this.rollData.attack, this.rollData.defense)
@@ -137,6 +160,9 @@ export default class ApplyDamagePrompt extends Application {
     return -(damage + bonus);
   }
 
+  /** -------------------------------------------- */
+  /** Take Damage                                  */
+  /** -------------------------------------------- */
   async _takeDamage(e) {
     e.preventDefault();
     const activeSelfEffects = this.effects.self.filter(eff => eff.active);
@@ -149,6 +175,10 @@ export default class ApplyDamagePrompt extends Application {
       target.addAttackEffects?.(activeTargetEffects);
     }
 
-    this.close();
+    await this.close();
+  }
+
+  static async _onTakeDamage(event, target) {
+    await this._takeDamage(event);
   }
 }

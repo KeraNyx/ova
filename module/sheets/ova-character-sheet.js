@@ -1,31 +1,51 @@
 import RollPrompt from "../dialogs/roll-prompt.js";
 import AddActiveEffectPrompt from "../dialogs/add-active-effect-dialogue.js";
 
-export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
+export default class OVACharacterSheet extends foundry.applications.sheets.ActorSheetV2 {
 
   constructor(...args) {
     super(...args);
     this.selectedAbilities = [];
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      template: "systems/ova/templates/sheets/ova-character-sheet.html",
-      tabs: [{ navSelector: ".combat-tabs", contentSelector: ".combat-content" }],
-      scrollY: [".ability-card"],
-      classes: ["ova"]
-    });
-  }
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "character"],
+    position: { width: 720, height: 600 },
+    window: { resizable: true },
+    actions: {
+      editItem: OVACharacterSheet._onEditItem,
+      selectAbility: OVACharacterSheet._onSelectAbility,
+      toggleAbility: OVACharacterSheet._onToggleAbility,
+      makeManualRoll: OVACharacterSheet._onMakeManualRoll,
+      makeAttackRoll: OVACharacterSheet._onMakeAttackRoll,
+      makeDefenseRoll: OVACharacterSheet._onMakeDefenseRoll,
+      addActiveEffect: OVACharacterSheet._onAddActiveEffect,
+      removeEffect: OVACharacterSheet._onRemoveEffect
+    }
+  };
 
-  /* -------------------------------------------- */
-  /*  Data Preparation                            */
-  /* -------------------------------------------- */
-  getData() {
-    const context = super.getData();
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/sheets/ova-character-sheet.html"
+    }
+  };
+
+  tabGroups = {
+    combat: "attacks"
+  };
+
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
     const actor = this.actor;
 
     context.actor = actor;
-    context.system = actor?.system ?? {};
+    context.system = actor.system ?? {};
     context.config = CONFIG.OVA;
     context.selectedAbilities = this.selectedAbilities;
 
@@ -38,7 +58,7 @@ export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
     let weaknessLevels = 0;
 
     for (const item of actor.items) {
-      const system = item?.system ?? {};
+      const system = item.system ?? {};
 
       if (item.type === "attack") {
         context.attacks.push(item);
@@ -73,25 +93,40 @@ export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
     return context;
   }
 
-  /* -------------------------------------------- */
-  /*  Listeners                                   */
-  /* -------------------------------------------- */
-  activateListeners(html) {
-    super.activateListeners(html);
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
 
-    html.find(".item-edit").on("click", ev => this._editItem(ev));
-    html.find(".ability-name").on("click", ev => this._selectAbility(ev));
-    html.find(".ability-active").on("click", ev => this._toggleAbility(ev));
-    html.find(".roll-dice").on("click", ev => this._makeManualRoll(ev));
-    html.find(".attack-block").on("click", ev => this._makeAttackRoll(ev));
-    html.find(".defense-value").on("click", ev => this._makeDefenseRoll(ev));
-    html.find(".add-active-effect").on("click", ev => this._addActiveEffect(ev));
-    html.find(".effect-delete").on("click", ev => this._removeEffect(ev));
+    this.element.querySelectorAll(".item-edit")
+      .forEach(el => el.addEventListener("click", ev => this._editItem(ev)));
+
+    this.element.querySelectorAll(".ability-name")
+      .forEach(el => el.addEventListener("click", ev => this._selectAbility(ev)));
+
+    this.element.querySelectorAll(".ability-active")
+      .forEach(el => el.addEventListener("click", ev => this._toggleAbility(ev)));
+
+    this.element.querySelectorAll(".roll-dice")
+      .forEach(el => el.addEventListener("click", ev => this._makeManualRoll(ev)));
+
+    this.element.querySelectorAll(".attack-block")
+      .forEach(el => el.addEventListener("click", ev => this._makeAttackRoll(ev)));
+
+    this.element.querySelectorAll(".defense-value")
+      .forEach(el => el.addEventListener("click", ev => this._makeDefenseRoll(ev)));
+
+    this.element.querySelectorAll(".add-active-effect")
+      .forEach(el => el.addEventListener("click", ev => this._addActiveEffect(ev)));
+
+    this.element.querySelectorAll(".effect-delete")
+      .forEach(el => el.addEventListener("click", ev => this._removeEffect(ev)));
   }
 
-  /* -------------------------------------------- */
-  /*  Item Helpers                                */
-  /* -------------------------------------------- */
+  /** -------------------------------------------- */
+  /** Item Helpers                                 */
+  /** -------------------------------------------- */
   _getItemId(event) {
     return event.currentTarget.closest(".item")?.dataset?.itemId;
   }
@@ -129,13 +164,17 @@ export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
     this.render(false);
   }
 
-  /* -------------------------------------------- */
-  /*  Rolls                                       */
-  /* -------------------------------------------- */
+  _getSelectedAbilities() {
+    return this.actor.items.filter(i => this.selectedAbilities.includes(i.id));
+  }
+
+  /** -------------------------------------------- */
+  /** Rolls                                        */
+  /** -------------------------------------------- */
   async _makeManualRoll(event) {
     event.preventDefault();
 
-    const abilities = this.actor.items.filter(i => this.selectedAbilities.includes(i.id));
+    const abilities = this._getSelectedAbilities();
     let roll = this.actor.system?.globalMod ?? 0;
     let enduranceCost = 0;
 
@@ -153,6 +192,23 @@ export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
     });
   }
 
+  async _makeAttackRoll(event) {
+    event.preventDefault();
+    const item = this.actor.items.get(this._getItemId(event));
+    if (!item) return;
+    // Delegate to item or roll prompt as needed
+    item.sheet?.render(true);
+  }
+
+  async _makeDefenseRoll(event) {
+    event.preventDefault();
+    const defense = event.currentTarget.dataset?.defense;
+    if (!defense) return;
+
+    const value = this.actor.system?.defenses?.[defense] ?? 0;
+    await this._makeRoll({ roll: value, enduranceCost: 0 });
+  }
+
   async _makeRoll({ roll, enduranceCost = 0, callback }) {
     const result = await new RollPrompt("", "manual", this.actor, null, enduranceCost, roll).show();
     if (!result) return;
@@ -162,25 +218,28 @@ export default class OVACharacterSheet extends foundry.appv1.sheets.ActorSheet {
     this.render();
   }
 
-  /* -------------------------------------------- */
-  /*  Effects                                     */
-  /* -------------------------------------------- */
+  /** -------------------------------------------- */
+  /** Effects                                      */
+  /** -------------------------------------------- */
   _removeEffect(event) {
     event.preventDefault();
     const id = this._getItemId(event);
-    this.actor.deleteEmbeddedDocuments("ActiveEffect", [id]);
+    if (id) this.actor.deleteEmbeddedDocuments("ActiveEffect", [id]);
   }
 
   _addActiveEffect() {
     new AddActiveEffectPrompt(this.actor).render(true);
   }
 
-  /* -------------------------------------------- */
-  /*  Save Sheet Changes                           */
-  /* -------------------------------------------- */
-  async _updateObject(event, formData) {
-    event.preventDefault();
-    // This updates the actor with all changes from the form
-    await this.actor.update(formData);
-  }
+  /** -------------------------------------------- */
+  /** Static Action Handlers                       */
+  /** -------------------------------------------- */
+  static async _onEditItem(event, target) { this._editItem(event); }
+  static async _onSelectAbility(event, target) { await this._selectAbility(event); }
+  static async _onToggleAbility(event, target) { await this._toggleAbility(event); }
+  static async _onMakeManualRoll(event, target) { await this._makeManualRoll(event); }
+  static async _onMakeAttackRoll(event, target) { await this._makeAttackRoll(event); }
+  static async _onMakeDefenseRoll(event, target) { await this._makeDefenseRoll(event); }
+  static async _onAddActiveEffect(event, target) { this._addActiveEffect(); }
+  static async _onRemoveEffect(event, target) { this._removeEffect(event); }
 }

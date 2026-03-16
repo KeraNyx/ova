@@ -122,8 +122,8 @@ export default class OVAEffect {
 
     const resolvedKey = effect.key.replace(/\?/g, effect.keyValue ?? "");
 
-    const aeData = {
-      label: effect.source.name,
+const aeData = {
+      name: effect.source.name,
       origin: effect.source.uuid,
       disabled: false,
       changes: [{

@@ -1,10 +1,10 @@
 <h2>{{localize "OVA.Perk.NamePlural"}}</h2>
 <div class="perks content">
     {{#each perks as |perk|}}
-    <div class="item perk flexrow" data-item-id="{{perk._id}}">
-        <h3>{{perk.name}} {{#if (gt perk.data.level.value 1)}} X{{perk.data.level.value}}{{/if}}
-            {{#if perk.data.flavor}}: {{perk.data.flavor}} {{/if}}
-            ({{localize 'OVA.Endurance.Short'}}: {{mul perk.data.enduranceCost perk.data.level.value}})</h3>
+    <div class="item perk flexrow" data-item-id="{{perk.id}}">
+        <h3>{{perk.name}} {{#if (gt perk.system.level.value 1)}} X{{perk.system.level.value}}{{/if}}
+            {{#if perk.system.flavor}}: {{perk.system.flavor}} {{/if}}
+            ({{localize 'OVA.Endurance.Short'}}: {{mul perk.system.enduranceCost perk.system.level.value}})</h3>
         <a class="item-control perk-delete flex0" title="Delete Item"><i class="fas fa-trash"></i></a>
     </div>
     {{/each}}

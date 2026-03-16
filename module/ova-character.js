@@ -52,6 +52,7 @@ export default class OVACharacter extends Actor {
   /* -------------------------------------------- */
 
   async _preUpdate(changes, options, user) {
+    await super._preUpdate(changes, options, user);
     const s = this.system;
 
     let hp = foundry.utils.getProperty(changes, "system.hp.value") ?? s.hp.value;
@@ -79,7 +80,7 @@ export default class OVACharacter extends Actor {
     }
 
     this._notifyValueChange(s.hp.value, hp);
-    this._notifyValueChange(s.endurance.value, end, "#427ef5");
+    this._notifyValueChange(s.endurance.value, end, 0x427ef5);
   }
 
   /* -------------------------------------------- */
@@ -142,7 +143,7 @@ export default class OVACharacter extends Actor {
     for (const item of this.items) {
       if (item.type !== "ability" || !item.system.active) continue;
       item.ovaEffects
-        ?.sort((a, b) => a.data.priority - b.data.priority)
+        ?.sort((a, b) => a.priority - b.priority)
         .forEach(e => e.apply(s));
     }
 

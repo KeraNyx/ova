@@ -1,15 +1,19 @@
-export default class OVATokenHUD extends TokenHUD {
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: "token-hud",
+export default class OVATokenHUD extends foundry.applications.hud.TokenHUD {
+
+  static DEFAULT_OPTIONS = {
+    id: "token-hud",
+  };
+
+  static PARTS = {
+    body: {
       template: "systems/ova/templates/token/token-hud.html"
-    });
-  }
+    }
+  };
 
-  activateListeners(html) {
-    super.activateListeners(html);
+  _onRender(context, options) {
+    super._onRender(context, options);
 
-    html
+    this.element
       .querySelector('[data-action="trigger-effects"]')
       ?.addEventListener("click", this._triggerActiveEffects.bind(this));
   }

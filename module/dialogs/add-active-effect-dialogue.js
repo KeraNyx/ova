@@ -1,56 +1,72 @@
 import OVAEffect from "../effects/ova-effect.js";
 
-export default class AddActiveEffectPrompt extends Application {
+export default class AddActiveEffectPrompt extends foundry.applications.api.ApplicationV2 {
   constructor(actor) {
     super({});
     this.actor = actor;
     this.effect = OVAEffect.defaultObject();
   }
 
-  /** @override */
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ["ova", "dialog"],
-      template: "systems/ova/templates/dialogs/add-active-effect-dialog.html",
-      width: 500,
-      height: "auto",
-      title: game.i18n.localize('OVA.AddActiveEffect'),
-      resizable: true,
-      close: () => {}
-    });
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "dialog"],
+    position: { width: 500, height: "auto" },
+    window: {
+      title: "OVA.AddActiveEffect",
+      resizable: true
+    },
+    actions: {
+      submitEffect: AddActiveEffectPrompt._onSubmitEffect
+    }
+  };
+
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/dialogs/add-active-effect-dialog.html"
+    }
+  };
+
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    context.config = CONFIG.OVA;
+    context.effect = this.effect;
+    return context;
   }
 
-  /** @override */
-  activateListeners(html) {
-    super.activateListeners(html);
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
 
-    // Ensure html is a plain HTMLElement
-    const root = html instanceof HTMLElement ? html : html[0];
-
-    root?.querySelectorAll('.effect-key-select').forEach(el => {
-      el.addEventListener('change', ev => {
-        const valueContainer = root.querySelector('.effect-key-value');
-        if (ev.currentTarget.value.includes("?")) valueContainer.classList.remove('hidden');
-        else valueContainer.classList.add('hidden');
+    this.element.querySelectorAll(".effect-key-select").forEach(el => {
+      el.addEventListener("change", ev => {
+        const valueContainer = this.element.querySelector(".effect-key-value");
+        if (ev.currentTarget.value.includes("?")) {
+          valueContainer?.classList.remove("hidden");
+        } else {
+          valueContainer?.classList.add("hidden");
+        }
       });
     });
   }
 
-  /** @override */
-  getData() {
-    const data = super.getData();
-    data.config = CONFIG.OVA;
-    data.effect = this.effect;
-    return data;
-  }
-
-  /** @override */
-  async _updateObject(event, formData) {
+  /** -------------------------------------------- */
+  /** Form Submission                              */
+  /** -------------------------------------------- */
+  async _onSubmit(event, form, formData) {
     event.preventDefault();
+    const data = formData.object;
+
     const effectData = {
       active: true,
       source: {
-        name: formData['name'],
+        name: data["name"],
         data: {},
         level: 0,
       },
@@ -59,12 +75,19 @@ export default class AddActiveEffectPrompt extends Application {
       }
     };
 
-    // Map additional fields from formData
-    for (const key in formData) {
-      foundry.utils.setProperty(effectData, key, formData[key]);
+    for (const key in data) {
+      foundry.utils.setProperty(effectData, key, data[key]);
     }
 
     const activeEffect = OVAEffect.createActiveEffect(effectData, this.actor.system);
     await this.actor.addAttackEffects([activeEffect]);
+    await this.close();
+  }
+
+  static async _onSubmitEffect(event, target) {
+    const form = this.element.querySelector("form");
+    if (!form) return;
+    const formData = new FormDataExtended(form);
+    await this._onSubmit(event, form, formData);
   }
 }

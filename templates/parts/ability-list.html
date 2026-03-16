@@ -2,38 +2,37 @@
     <div class="ability-card">
         <div class="ability-list items">
             {{#each items as |item|}}
-            <div class="item ability {{#if (contains ../selected item._id)}}selected{{/if}} {{#if item.data.level.mod}}modified{{/if}} {{#if item.data.temporary}}temporary{{/if}}" data-item-id="{{item._id}}">
+            <div class="item ability {{#if (contains ../selected item.id)}}selected{{/if}} {{#if item.system.level.mod}}modified{{/if}} {{#if item.system.temporary}}temporary{{/if}}" data-item-id="{{item.id}}">
                 <div class="flexrow">
-                    {{abilitySign item}}<div class="ability-level item-view" data-item-id="{{item._id}}">
-                        {{item.data.level.total}}
+                    {{abilitySign item}}<div class="ability-level item-view" data-item-id="{{item.id}}">
+                        {{item.system.level.total}}
                     </div>
-                    <input class="ability-level item-value hidden" name="item-{{item._id}}" data-item-id="{{item._id}}"
-                        value="{{item.data.level.value}}" data-dtype="Number" />
+                    <input class="ability-level item-value hidden" name="item-{{item.id}}" data-item-id="{{item.id}}"
+                        value="{{item.system.level.value}}" data-dtype="Number" />
                     <div class="ability-description flexrow">
                         <div class="flex0">
-                            <i class="ability-active {{#if item.data.active}}fa{{else}}far{{/if}} fa-circle"></i>
+                            <i class="ability-active {{#if item.system.active}}fa{{else}}far{{/if}} fa-circle"></i>
                         </div>
                         <div class="ability-name">
-                            {{item.name}} 
-                            {{#if data.limitedUse}}
-                            {{#if (gt data.limitedUse.max 0)}}
-                            [{{data.limitedUse.value}}/{{data.limitedUse.max}} <a class="reset-uses"><i hint="reset" class="fas fa-redo"></i></a>]
+                            {{item.name}}
+                            {{#if item.system.limitedUse}}
+                            {{#if (gt item.system.limitedUse.max 0)}}
+                            [{{item.system.limitedUse.value}}/{{item.system.limitedUse.max}} <a class="reset-uses"><i hint="reset" class="fas fa-redo"></i></a>]
                             {{/if}}
                             {{/if}}
-                            {{#if data.flavor}}({{data.flavor}}){{/if}} 
+                            {{#if item.system.flavor}}({{item.system.flavor}}){{/if}}
                             <span class="inline-perks">{{inlinePerks item}}</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="flexcol">
-                {{#each item.data.abilities as |subability|}}
-                <div class="item sub-ability {{#if (contains ../../selected subability._id)}}selected{{/if}} {{#if item.data.temporary}}temporary{{/if}}"
-                    data-item-id="{{subability._id}}">
+                {{#each item.system.abilities as |subability|}}
+                <div class="item sub-ability {{#if (contains ../../selected subability.id)}}selected{{/if}} {{#if subability.system.temporary}}temporary{{/if}}"
+                    data-item-id="{{subability.id}}">
                     <div class="ability-description">
                         <div class="ability-name">
-                            {{abilitySign subability}}{{subability.data.level.total}} {{subability.name}} {{inlinePerks
-                            subability}}
+                            {{abilitySign subability}}{{subability.system.level.total}} {{subability.name}} {{inlinePerks subability}}
                         </div>
                     </div>
                 </div>

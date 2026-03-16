@@ -1,21 +1,26 @@
 import BaseItemSheet from "./base-item-sheet.js";
 
 export default class OVAPerkSheet extends BaseItemSheet {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            template: "systems/ova/templates/sheets/ova-perk-sheet.html"
-        });
+
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "perk"],
+  };
+
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/sheets/ova-perk-sheet.html"
     }
+  };
 
-    /** @override */
-    getData() {
-        const data = super.getData();
-
-        const itemData = data.data;
-        data.config = CONFIG.OVA;
-
-        data.item = itemData;
-        data.data = itemData.data;
-        return data;
-    }
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    context.config = CONFIG.OVA;
+    return context;
+  }
 }

@@ -13,45 +13,41 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="size clickable {{#if (eq sizeSelection 'disadvantage') }}selected{{/if}}"
+            <tr class="size clickable {{#if (eq sizeSelection 'disadvantage')}}selected{{/if}}"
                 data-selection="disadvantage">
                 <td><b>{{localize 'OVA.Size.Disadvantage.Name'}}</b></td>
-                <td class="center">
-                    <b>-5</b>
-                </td>
+                <td class="center"><b>-5</b></td>
             </tr>
-            <tr class="size clickable {{#if (eq sizeSelection 'normal') }}selected{{/if}}" data-selection="normal">
+            <tr class="size clickable {{#if (eq sizeSelection 'normal')}}selected{{/if}}"
+                data-selection="normal">
                 <td><b>{{localize 'OVA.Size.Normal.Name'}}</b></td>
-                <td class="center">
-                    <b>0</b>
-                </td>
+                <td class="center"><b>0</b></td>
             </tr>
-            <tr class="size clickable {{#if (eq sizeSelection 'advantage') }}selected{{/if}}"
+            <tr class="size clickable {{#if (eq sizeSelection 'advantage')}}selected{{/if}}"
                 data-selection="advantage">
                 <td><b>{{localize 'OVA.Size.Advantage.Name'}}</b></td>
-                <td class="center">
-                    <b>+5</b>
-                </td>
+                <td class="center"><b>+5</b></td>
             </tr>
         </tbody>
     </table>
     {{/if}}
     {{/if}}
+
     {{#if enduranceCost}}
     <table class="ova">
         <thead>
             <tr>
                 <th>{{localize 'OVA.Endurance.Pool'}}</th>
-                <th>Cost (<span id="endurance-cost" contenteditable>{{enduranceCost}}</span>)</th>
+                <th>Cost (<input id="endurance-cost" type="number" value="{{enduranceCost}}" />)</th>
             </tr>
         </thead>
         <tbody>
-            {{#if (lte actor.data.data.attributes.endurance.value 0)}}
+            {{#if (lte actor.system.endurance.value 0)}}
             <tr class="enduranse-pool clickable {{#if (eq enduranseSelection 'base')}}selected{{/if}}"
                 data-selection="base">
                 <td><b>HP</b></td>
                 <td class="center">
-                    <b>{{actor.data.data.attributes.hp.value}}/{{actor.data.data.attributes.hp.max}}</b>
+                    <b>{{actor.system.hp.value}}/{{actor.system.hp.max}}</b>
                 </td>
             </tr>
             {{else}}
@@ -59,17 +55,17 @@
                 data-selection="base">
                 <td><b>Base Endurance</b></td>
                 <td class="center">
-                    <b>{{actor.data.data.attributes.endurance.value}}/{{actor.data.data.attributes.endurance.max}}</b>
+                    <b>{{actor.system.endurance.value}}/{{actor.system.endurance.max}}</b>
                 </td>
             </tr>
             {{/if}}
             {{#if (ne type "drama")}}
-            {{#if (gt actor.data.data.attributes.enduranceReserve.max 0)}}
+            {{#if (gt actor.system.enduranceReserve.max 0)}}
             <tr class="enduranse-pool clickable {{#if (eq enduranseSelection 'reserve')}}selected{{/if}}"
                 data-selection="reserve">
                 <td><b>Endurance Reserve</b></td>
                 <td class="center">
-                    <b>{{actor.data.data.attributes.enduranceReserve.value}}/{{actor.data.data.attributes.enduranceReserve.max}}</b>
+                    <b>{{actor.system.enduranceReserve.value}}/{{actor.system.enduranceReserve.max}}</b>
                 </td>
             </tr>
             {{/if}}
@@ -77,15 +73,25 @@
         </tbody>
     </table>
     {{/if}}
-    {{#if advRoll}}
-    <h2>Size:</h2>
-    {{/if}}
+
     <div class="dialog-buttons">
-        {{#each buttons as |button id|}}
-        <button class="dialog-button {{cssClass}}" data-button="{{id}}">
-            {{{button.icon}}}
-            {{{button.label}}}
+        {{#if (eq type "drama")}}
+        <button type="button" data-action="rollDrama">
+            <i class="fas fa-dice"></i> {{localize 'OVA.Roll.Drama'}} (5)
         </button>
-        {{/each}}
+        <button type="button" data-action="rollMiracle">
+            <i class="fas fa-dice"></i> {{localize 'OVA.Roll.Miracle'}} (30)
+        </button>
+        {{else if (eq type "defense")}}
+        <button type="button" data-action="rollZero">0</button>
+        <button type="button" data-action="roll">
+            <i class="fas fa-dice"></i> {{localize 'OVA.MakeRoll'}}
+        </button>
+        <button type="button" data-action="rollDouble">x2</button>
+        {{else}}
+        <button type="button" data-action="roll">
+            <i class="fas fa-dice"></i> {{localize 'OVA.MakeRoll'}}
+        </button>
+        {{/if}}
     </div>
 </section>
