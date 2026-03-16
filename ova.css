@@ -175,7 +175,6 @@
 }
 
 .selected {
-    /* background-color: #9e9797; */
     background-color: #731d2080 !important;
     color: white;
 }
@@ -184,8 +183,19 @@
     color: white;
 }
 
-.window-app .window-content {
+/* V2 Application window fixes */
+.window-app .window-content,
+.application .window-content {
     background: #fff;
+}
+
+.application.ova .window-content {
+    padding: 0px;
+}
+
+.application .window-header .header-control i {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
 }
 
 .char-sheet-header {
@@ -277,14 +287,11 @@ input.character-name {
     width: 60px;
 }
 
-
-/* scale on hover */
 .roll-dice.dice:hover {
     transform: scale(1.1);
     z-index: 1;
 }
 
-/* flashy effect on click */
 .roll-dice.dice:active {
     transform: scale(1.2);
     z-index: 1;
@@ -308,7 +315,6 @@ table.ova thead {
 }
 
 .attack-block>* {
-    /* padding-left: .2em; */
     padding-top: .3em;
     border-right: 1px solid #731d20;
     border-bottom: 1px solid #731d20;
@@ -732,7 +738,8 @@ input.experience {
     color: white;
 }
 
-.ova .window-content {
+.ova .window-content,
+.application.ova .window-content {
     padding: 0px;
 }
 
@@ -744,13 +751,7 @@ input.experience {
     min-height: 200px;
 }
 
-/* .ova.content input {
-    width: 100%;
-    background-color: white;
-} */
-
 .ova.content {
-    /* background-color: #ebe1e1; */
     padding: .5em;
 }
 

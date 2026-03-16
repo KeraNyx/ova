@@ -1,8 +1,1 @@
-2026/03/16-15:58:37.206 3704 Log #117: 0 ops saved to Table #120 OK
-2026/03/16-15:58:37.206 3704 Archiving C:\Users\konek\AppData\Local\FoundryVTT\Data\systems\ova\packs\boss-abilities/000117.log: OK
-2026/03/16-15:58:37.207 3704 Log #119: 0 ops saved to Table #121 OK
-2026/03/16-15:58:37.207 3704 Archiving C:\Users\konek\AppData\Local\FoundryVTT\Data\systems\ova\packs\boss-abilities/000119.log: OK
-2026/03/16-15:58:37.207 3704 Table #5: 8 entries OK
-2026/03/16-15:58:37.212 3704 Archiving C:\Users\konek\AppData\Local\FoundryVTT\Data\systems\ova\packs\boss-abilities/MANIFEST-000116: OK
-2026/03/16-15:58:37.212 3704 Archiving C:\Users\konek\AppData\Local\FoundryVTT\Data\systems\ova\packs\boss-abilities/MANIFEST-000118: OK
-2026/03/16-15:58:37.220 3704 **** Repaired leveldb C:\Users\konek\AppData\Local\FoundryVTT\Data\systems\ova\packs\boss-abilities; recovered 1 files; 1606 bytes. Some data may have been lost. ****
+2026/03/16-15:58:37.233 3704 Delete type=3 #1
