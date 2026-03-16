@@ -7,12 +7,11 @@
             <div class="flexrow">
                 <div>{{ localize 'OVA.CharacterName'}}</div>
                 <div class="flex0 center">{{ localize 'OVA.Experience.Short'}}:</div>
-                <input name="data.experience.value" type="number" class="experience" value="{{actor.data.data.experience.value}}"
+                <input name="system.experience.value" type="number" class="experience" value="{{system.experience.value}}"
                     placeholder="{{ localize 'OVA.Experience.Name' }}" />
             </div>
         </div>
-        <!-- <div style="background-image: url('{{actor.img}}');" class="character-portrait clickable" data-edit="img" title="{{actor.name}}"></div> -->
-        <img src="{{actor.img}}" class="character-portrait" data-edit="img" title="{{actor.name}}" height="128"  width="128" />
+        <img src="{{actor.img}}" class="character-portrait" data-edit="img" title="{{actor.name}}" height="128" width="128" />
     </header>
 
     <div class="ability-block flexrow">
@@ -22,9 +21,9 @@
                     {{localize "OVA.Roll.Drama"}}<div class="drama-dice"></div>
                 </div>
             </div>
-            <div class="drama-dice-name free-drama-dice give-free-dd clickable">{{localize 'OVA.Free'}}: {{actor.data.dramaDice.free}}
+            <div class="drama-dice-name free-drama-dice give-free-dd clickable">{{localize 'OVA.Free'}}: {{system.dramaDice.free}}
             </div>
-            <div class="drama-dice-name free-drama-dice reset-used-dd clickable">{{localize 'OVA.Used'}}: {{actor.data.dramaDice.used}}
+            <div class="drama-dice-name free-drama-dice reset-used-dd clickable">{{localize 'OVA.Used'}}: {{system.dramaDice.used}}
             </div>
         </div>
         <div>
@@ -36,17 +35,17 @@
             {{> "systems/ova/templates/parts/ability-list.html" items=weaknesses selected=selectedAbilities}}
         </div>
     </div>
-    {{#if data.enduranceReserve.max}}
+    {{#if system.enduranceReserve.max}}
     <div class="reserve-block">
         <div class="reserve-data center flexrow">
             <div class="combat-cell">
                 <div class="combat-cell-name">{{ localize 'OVA.Endurance.Reserve' }}</div>
-                <input type="text" class="combat-cell-value end-value" name="data.enduranceReserve.value"
-                    value="{{data.data.enduranceReserve.value}}" data-dtype="Number" />
+                <input type="text" class="combat-cell-value end-value" name="system.enduranceReserve.value"
+                    value="{{system.enduranceReserve.value}}" data-dtype="Number" />
             </div>
             <div class="combat-side-cell">
                 <div class="combat-side-value combat-cell-name">Max</div>
-                <div class="combat-side-value combat-cell-value">{{ data.enduranceReserve.max }}</div>
+                <div class="combat-side-value combat-cell-value">{{ system.enduranceReserve.max }}</div>
             </div>
         </div>
     </div>
@@ -59,13 +58,13 @@
             </div>
             <div class="ability-card">
                 <div class="ability-list">
-                    {{#each actor.data.effects as |effect|}}
+                    {{#each actor.effects as |effect|}}
                     {{> "systems/ova/templates/parts/effect-inline-desc.html" effect=effect}}
                     {{/each}}
                 </div>
             </div>
         </div>
-        {{> "systems/ova/templates/parts/combat-stats.html" actor=actor attacks=attacks spells=spells}}
+        {{> "systems/ova/templates/parts/combat-stats.html" actor=actor attacks=attacks spells=spells system=system}}
     </div>
     <div class="fixed-panel">
         <div class='roll-dice dice'></div>
