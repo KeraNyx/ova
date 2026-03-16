@@ -1,4 +1,4 @@
-export default class OVATokenHUD extends foundry.applications.hud.TokenHUD {
+export default class OVATokenHUD extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.hud.TokenHUD) {
 
   static DEFAULT_OPTIONS = {
     id: "token-hud",

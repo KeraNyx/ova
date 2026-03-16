@@ -1,6 +1,9 @@
 import OVAEffect from "../effects/ova-effect.js";
 
-export default class AddActiveEffectPrompt extends foundry.applications.api.ApplicationV2 {
+const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
+
+export default class AddActiveEffectPrompt extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
+
   constructor(actor) {
     super({});
     this.actor = actor;

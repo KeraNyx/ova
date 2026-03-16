@@ -1,7 +1,10 @@
 import RollPrompt from "../dialogs/roll-prompt.js";
 import AddActiveEffectPrompt from "../dialogs/add-active-effect-dialogue.js";
 
-export default class OVACharacterSheet extends foundry.applications.sheets.ActorSheetV2 {
+const { ActorSheetV2 } = foundry.applications.sheets;
+const { HandlebarsApplicationMixin } = foundry.applications.api;
+
+export default class OVACharacterSheet extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.sheets.ActorSheetV2) {
 
   constructor(...args) {
     super(...args);
