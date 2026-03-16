@@ -1,8 +1,5 @@
 import OVAEffect from "../effects/ova-effect.js";
 
-const { ItemSheetV2 } = foundry.applications.sheets;
-const { HandlebarsApplicationMixin } = foundry.applications.api;
-
 export default class BaseItemSheet extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.sheets.ItemSheetV2) {
 
   /** -------------------------------------------- */

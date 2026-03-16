@@ -1,10 +1,8 @@
 import OVAEffect from "../effects/ova-effect.js";
 import Socket from "../sockets/socket.js";
 
-const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
-
 export default class ApplyDamagePrompt extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
-    
+
     constructor({ effects, rollData, targets, attacker }) {
     super({});
     this.rollData = rollData;

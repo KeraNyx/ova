@@ -6,8 +6,6 @@ const sizeMods = {
   advantage: 5,
 };
 
-const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
-
 export default class RollPrompt extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
     
   resolve = null;
