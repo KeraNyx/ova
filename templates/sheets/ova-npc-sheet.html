@@ -16,17 +16,17 @@
             {{> "systems/ova/templates/parts/ability-list.html" items=abilities selected=selectedAbilities}}
         </div>
         <div class="compact-combat">
-            {{#if data.enduranceReserve.max}}
+            {{#if system.enduranceReserve.max}}
             <div class="reserve-block">
                 <div class="reserve-data center flexrow">
                     <div class="combat-cell">
                         <div class="combat-cell-name">{{ localize 'OVA.Endurance.Reserve' }}</div>
-                        <input type="text" class="combat-cell-value" name="data.enduranceReserve.value"
-                            value="{{data.data.enduranceReserve.value}}" data-dtype="Number" />
+                        <input type="text" class="combat-cell-value" name="system.enduranceReserve.value"
+                            value="{{system.enduranceReserve.value}}" data-dtype="Number" />
                     </div>
                     <div class="combat-side-cell">
                         <div class="combat-side-value combat-cell-name">Max</div>
-                        <div class="combat-side-value combat-cell-value">{{ data.enduranceReserve.max }}</div>
+                        <div class="combat-side-value combat-cell-value">{{ system.enduranceReserve.max }}</div>
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
             <div class="compact-fixed-panel">
                 <div class='roll-dice small dice'></div>
             </div>
-            {{> "systems/ova/templates/parts/combat-stats.html" actor=actor attacks=attacks spells=spells}}
+            {{> "systems/ova/templates/parts/combat-stats.html" actor=actor attacks=attacks spells=spells system=system}}
         </div>
     </div>
 </form>

@@ -4,7 +4,7 @@
         <h1 class="flex3"><input name="name" type="text" value="{{item.name}}"
                 placeholder="{{ localize 'OVA.Name' }}" /></h1>
         {{#if isEmbedded}}
-        <div class="item delete-button flex0" data-item-id="{{perk._id}}">
+        <div class="item delete-button flex0" data-item-id="{{item.id}}">
             <a class="item-delete" title="Delete Item"><i class="fas fa-trash"></i></a>
         </div>
         {{/if}}
@@ -13,7 +13,6 @@
         <a class="item" data-tab="description" data-group="primary-tabs">{{localize 'OVA.Description'}}</a>
         <a class="item" data-tab="abilities" data-group="primary-tabs">{{localize 'OVA.Ability.NamePlural'}}</a>
     </nav>
-    {{!-- Ability Fields --}}
     <section class="ova content">
         <div class="tab" data-tab="description" data-group="primary-tabs">
             <div class="description-tab">
@@ -21,9 +20,9 @@
                     <div class="limited-use">
                         <span>{{localize 'OVA.LimitedUse.Name'}}</span>
                         <div class="limited-use-values">
-                            <input type="text" value="{{data.limitedUse.value}}" name="data.limitedUse.value"
+                            <input type="text" value="{{system.limitedUse.value}}" name="system.limitedUse.value"
                                 data-dtype="Number" />/
-                            <input type="text" value="{{data.limitedUse.max}}" name="data.limitedUse.max"
+                            <input type="text" value="{{system.limitedUse.max}}" name="system.limitedUse.max"
                                 data-dtype="Number" />
                         </div>
                     </div>
@@ -32,7 +31,7 @@
                     <div>
                         <h2>{{ localize 'OVA.Description' }}</h2>
                         <div class="description">
-                            {{editor content=item.data.description target="data.description" button=true editable=true}}
+                            {{editor content=system.description target="system.description" button=true editable=true}}
                         </div>
                     </div>
                     {{#if isEmbedded}}

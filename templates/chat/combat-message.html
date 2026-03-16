@@ -2,8 +2,8 @@
 <div class="chat-attack-info">
     <div class="attack-name">{{attack.name}}</div>
     <div class="attack-perks">{{printPerks attack true}}</div>
-    <div class="attack-spell-effect">{{attack.data.effectName}} {{signedValue attack.data.effectLevel}}</div>
-    <div class="attack-description">{{{attack.data.description}}}</div>
+    <div class="attack-spell-effect">{{attack.system.effectName}} {{signedValue attack.system.effectLevel}}</div>
+    <div class="attack-description">{{{attack.system.description}}}</div>
 </div>
 {{/if}}
 {{#if item.perks}}
@@ -13,7 +13,7 @@
     {{#if item.abilities}}
     <div class="roll-abilities" style="display: none;">
         {{#each item.abilities as |ability|}}
-        <div class="roll-ability">{{abilitySign ability.data}}{{ability.data.data.level.value}} {{ability.name}}</div>
+        <div class="roll-ability">{{abilitySign ability.system}}{{ability.system.level.value}} {{ability.name}}</div>
         {{/each}}
     </div>
     {{/if}}

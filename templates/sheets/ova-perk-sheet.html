@@ -5,21 +5,20 @@
     </header>
     <h2 class="flavor-header">
         <span>{{ localize 'OVA.Flavor' }}: </span>
-        <input name="data.flavor" value="{{item.data.flavor}}"
+        <input name="system.flavor" value="{{system.flavor}}"
             placeholder="{{ localize 'OVA.Description' }}" type="text" />
     </h2>
     <nav class="tabs" data-group="primary-tabs">
         <a class="item" data-tab="description" data-group="primary-tabs">{{localize 'OVA.Description'}}</a>
         <a class="item" data-tab="effects" data-group="primary-tabs">{{ localize 'OVA.Effects.Name' }}</a>
     </nav>
-    {{!-- Perk Fields --}}
     <section class="ova content">
         <div class="tab" data-tab="description" data-group="primary-tabs">
             <div class="description-tab">
                 <div class="description-params">
                     <div class="item-type">
-                        <select name="data.type">
-                            {{#select data.type}}
+                        <select name="system.type">
+                            {{#select system.type}}
                             {{#each config.perkTypes as |name type|}}
                             <option value="{{type}}">{{localize name}}</option>
                             {{/each}}
@@ -28,24 +27,24 @@
                     </div>
                     <div class="endurance-cost">
                         <span>{{localize 'OVA.EnduranceCost'}}</span>
-                        <input type="text" value="{{data.enduranceCost}}" name="data.enduranceCost"
+                        <input type="text" value="{{system.enduranceCost}}" name="system.enduranceCost"
                             data-dtype="Number" />
                     </div>
                     <div class="rule-pg">
                         <span class="rulebook-link">{{localize 'OVA.Page.Short'}}</span>
-                        <input name="data.page" value="{{item.data.page}}" type="text" />
+                        <input name="system.page" value="{{system.page}}" type="text" />
                     </div>
                 </div>
                 <div>
                     <h2>{{ localize 'OVA.Description' }}</h2>
                     <div class="description">
-                        {{editor content=item.data.description target="data.description" button=true editable=true}}
+                        {{editor content=system.description target="system.description" button=true editable=true}}
                     </div>
                 </div>
             </div>
         </div>
         <div class="tab" data-tab="effects" data-group="primary-tabs">
-            {{> "systems/ova/templates/parts/effects.html" effects=data.effects }}
+            {{> "systems/ova/templates/parts/effects.html" effects=system.effects }}
         </div>
     </section>
 </form>

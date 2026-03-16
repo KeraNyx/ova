@@ -1,167 +1,184 @@
 import OVAEffect from "../effects/ova-effect.js";
+import Socket from "../sockets/socket.js";
 
-export default class ApplyDamagePrompt extends Dialog {
-    constructor({ effects, rollData, targets, attacker }) {
-        const dialogData = {
-            title: game.i18n.localize('OVA.ApplyDamage'),
-            buttons: {},
-            close: () => false,
+export default class ApplyDamagePrompt extends foundry.applications.api.ApplicationV2 {
+  constructor({ effects, rollData, targets, attacker }) {
+    super({});
+    this.rollData = rollData;
+    this.rawEffects = effects;
+    this.targets = targets;
+    this.attacker = attacker;
+    this.fatiguing = this.rollData.attack.fatiguing;
+    this.affinity = this.rollData.attack.affinity;
+
+    // Fill resistances from first target
+    this.resistances = {};
+    if (rollData.attack.dx < 0) return;
+
+    const target = this.targets[0];
+    if (target) {
+      for (const name in target.system.resistances) {
+        this.resistances[name] = {
+          canHeal: target.system.resistances[name]?.canHeal || false,
+          affected: target.system.resistances[name]?.affected || false,
         };
+      }
+    }
+  }
 
-        super(dialogData, {});
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "dialog"],
+    position: { width: 500, height: "auto" },
+    window: {
+      resizable: true,
+      title: "OVA.ApplyDamage"
+    },
+    actions: {
+      takeDamage: ApplyDamagePrompt._onTakeDamage
+    }
+  };
 
-        this.rollData = rollData;
-        this.rawEffects = effects;
-        this.targets = targets;
-        this.attacker = attacker;
-        this.fatiguing = this.rollData.attack.fatiguing;
-        this.affinity = this.rollData.attack.affinity;
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/dialogs/apply-damage-dialog.html"
+    }
+  };
 
-        // fill resistances from target
-        this.resistances = {};
-        
-        if (rollData.attack.dx < 0) return;
-        const target = this.targets[0];
-        for (const name in target.data.resistances) {
-            this.resistances[name] = {
-                canHeal: target.data.resistances[name].canHeal || false,
-                affected: target.data.resistances[name].affected || false,
-            };
-        }
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    this._prepareData();
+
+    context.effects = this.effects;
+    context.target = this.rollData.attack.dx >= 0 ? this.targets[0] : undefined;
+    context.resistances = this.resistances;
+    context.rollData = this.rollData;
+    context.affinity = this.affinity;
+
+    return context;
+  }
+
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
+
+    this.element.querySelectorAll(".effect-active")
+      .forEach(el => el.addEventListener("change", this._onSelfEffectActiveChange.bind(this)));
+
+    this.element.querySelectorAll(".effect-duration")
+      .forEach(el => el.addEventListener("change", this._onSelfEffectDurationChange.bind(this)));
+
+    this.element.querySelectorAll(".affected")
+      .forEach(el => el.addEventListener("change", this._onAffectedChange.bind(this)));
+
+    this.element.querySelectorAll(".can-heal")
+      .forEach(el => el.addEventListener("change", this._onCanHealChange.bind(this)));
+
+    this.element.querySelectorAll(".take-damage")
+      .forEach(el => el.addEventListener("click", this._takeDamage.bind(this)));
+  }
+
+  /** -------------------------------------------- */
+  /** Change Handlers                              */
+  /** -------------------------------------------- */
+  _onAffectedChange(e) {
+    const name = e.currentTarget.dataset.resName;
+    this.resistances[name].affected = e.currentTarget.checked;
+    this.render();
+  }
+
+  _onCanHealChange(e) {
+    const name = e.currentTarget.dataset.resName;
+    this.resistances[name].canHeal = e.currentTarget.checked;
+    this.render();
+  }
+
+  _onSelfEffectActiveChange(e) {
+    const type = e.currentTarget.dataset.effectType;
+    const index = e.currentTarget.dataset.effectIndex;
+    this.effects[type][index].active = e.currentTarget.checked;
+    this.rawEffects[type][index].active = e.currentTarget.checked;
+  }
+
+  _onSelfEffectDurationChange(e) {
+    const type = e.currentTarget.dataset.effectType;
+    const index = e.currentTarget.dataset.effectIndex;
+    const rounds = parseInt(e.currentTarget.value);
+    this.effects[type][index].duration.rounds = rounds;
+    this.rawEffects[type][index].duration = rounds;
+  }
+
+  /** -------------------------------------------- */
+  /** Data Preparation                             */
+  /** -------------------------------------------- */
+  _prepareData() {
+    const damage = this.rollData.attack.dx >= 0
+      ? this._calculateDamage(this.targets[0], this.rollData.attack, this.rollData.defense)
+      : this._calculateHeal(this.rollData.attack);
+    this.rollData.attack.damage = damage;
+
+    this.effects = {
+      self: this.rawEffects.self.map(e => OVAEffect.createActiveEffect(e, this.rollData)),
+      target: this.rawEffects.target.map(e => OVAEffect.createActiveEffect(e, this.rollData)),
+    };
+  }
+
+  _calculateHeal(attackRoll) {
+    return -attackRoll.result * attackRoll.dx;
+  }
+
+  _calculateDamage(actor, attackRoll, defenseRoll) {
+    const finalResult = attackRoll.result - defenseRoll.result;
+    const armor = actor.system.armor || 0;
+    const piercing = attackRoll.ignoreArmor || 0;
+    const effectiveArmor = Math.min(Math.max(armor - piercing, 0), 5);
+    let dx = Math.max(attackRoll.dx - effectiveArmor, 0.5);
+
+    let canHeal = false;
+    let totalVulnerability = 0;
+
+    for (const name in actor.system.resistances) {
+      if (!this.resistances[name]?.affected) continue;
+      const value = actor.system.resistances[name];
+      if (value >= 0) {
+        dx -= value;
+        if (this.resistances[name].canHeal) canHeal = true;
+      } else totalVulnerability += -value;
     }
 
-    get template() {
-        return 'systems/ova/templates/dialogs/apply-damage-dialog.html';
+    if (!canHeal && dx < 0) dx = 0;
+    const damage = Math.ceil(finalResult * dx);
+    const bonus = totalVulnerability > 0 ? damage * (0.5 * 2 ** (totalVulnerability - 1)) : 0;
+
+    return -(damage + bonus);
+  }
+
+  /** -------------------------------------------- */
+  /** Take Damage                                  */
+  /** -------------------------------------------- */
+  async _takeDamage(e) {
+    e.preventDefault();
+    const activeSelfEffects = this.effects.self.filter(eff => eff.active);
+    const activeTargetEffects = this.effects.target.filter(eff => eff.active);
+
+    await this.attacker.addAttackEffects?.(activeSelfEffects);
+    for (const target of this.targets) {
+      if (this.fatiguing) target.changeEndurance?.(this.rollData.attack.damage);
+      else target.changeHP?.(this.rollData.attack.damage);
+      target.addAttackEffects?.(activeTargetEffects);
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    await this.close();
+  }
 
-        html.find('.effect-active').on('change', this._onSelfEffectActiveChange.bind(this));
-        html.find('.effect-duration').on('change', this._onSelfEffectDurationChange.bind(this));
-        html.find('.affected').on('change', this._onAffectedChange.bind(this));
-        html.find('.can-heal').on('change', this._onCanHealChange.bind(this));
-        html.find('.take-damage').on('click', this._takeDamage.bind(this));
-    }
-
-    _onAffectedChange(e) {
-        e.preventDefault();
-
-        const resistanceName = e.currentTarget.dataset.resName;
-        this.resistances[resistanceName].affected = e.currentTarget.checked;
-        this.render(false);
-    }
-
-    _onCanHealChange(e) {
-        e.preventDefault();
-
-        const resistanceName = e.currentTarget.dataset.resName;
-        this.resistances[resistanceName].canHeal = e.currentTarget.checked;
-        this.render(false);
-    }
-
-    _onSelfEffectActiveChange(e) {
-        e.preventDefault();
-        // self or target
-        const effectType = e.currentTarget.dataset.effectType;
-        const effectIndex = e.currentTarget.dataset.effectIndex;
-
-        this.effects[effectType][effectIndex].active = e.currentTarget.checked;
-        this.rawEffects[effectType][effectIndex].active = e.currentTarget.checked;
-    }
-
-    _onSelfEffectDurationChange(e) {
-        e.preventDefault();
-        // self or target
-        const effectType = e.currentTarget.dataset.effectType;
-        const effectIndex = e.currentTarget.dataset.effectIndex;
-
-        this.effects[effectType][effectIndex].duration.rounds = Number.parseInt(e.currentTarget.value);
-        this.rawEffects[effectType][effectIndex].duration = Number.parseInt(e.currentTarget.value);
-    }
-
-    _prepareData() {
-        const damage = this.rollData.attack.dx >= 0 ? this._calculateDamage(this.targets[0], this.rollData.attack, this.rollData.defense) : this._calculateHeal(this.rollData.attack);
-        this.rollData.attack.damage = damage;
-        this.effects = {
-            self: this.rawEffects.self.map(e => OVAEffect.createActiveEffect(e, this.rollData)),
-            target: this.rawEffects.target.map(e => OVAEffect.createActiveEffect(e, this.rollData)),
-        }
-    }
-
-    getData() {
-        this._prepareData();
-        const context = super.getData();
-
-        context.effects = this.effects;
-
-        if (this.rollData.attack.dx >= 0) {
-            context.target = this.targets[0];
-        }
-        context.resistances = this.resistances;
-
-        context.rollData = this.rollData;
-        context.effects = this.effects;
-        context.affinity = this.affinity;
-
-        return context;
-    }
-
-    _calculateHeal(attackRoll) {
-        return -attackRoll.result * attackRoll.dx;
-    }
-
-    _calculateDamage(actor, attackRoll, defenseRoll) {
-        const finalResult = attackRoll.result - defenseRoll.result;
-
-        const armor = actor.data.armor || 0;
-        const piercing = attackRoll.ignoreArmor || 0
-        const effectiveArmor = Math.min(Math.max(armor - piercing, 0), 5); // armor can be 0-5
-        let dx = Math.max(attackRoll.dx - effectiveArmor, 0.5)
-
-        let canHeal = false;
-        let totalVulnerability = 0;
-        for (const resistance in actor.data.resistances) {
-            if (!this.resistances[resistance].affected) continue;
-
-            if (actor.data.resistances[resistance] >= 0) {
-                dx -= actor.data.resistances[resistance];
-                if (this.resistances[resistance].canHeal) {
-                    canHeal = true;
-                }
-            } else {
-                totalVulnerability += -actor.data.resistances[resistance];
-            }
-        }
-        if (!canHeal && dx < 0) dx = 0;
-
-        const damage = Math.ceil(finalResult * dx);
-
-        let bonusDamage = 0;
-        if (totalVulnerability > 0) {
-            bonusDamage = damage * (.5 * 2 ** (totalVulnerability - 1));
-        }
-
-        return -(damage + bonusDamage);
-    }
-
-    async _takeDamage(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        // apply activated effects to self
-        const activeSelfEffects = this.effects.self.filter(effect => effect.active);
-        const activeTargetEffects = this.effects.target.filter(effect => effect.active);
-
-        await this.attacker.addAttackEffects(activeSelfEffects);
-        this.targets.forEach(target => {
-            if (this.fatiguing) {
-                target.changeEndurance(this.rollData.attack.damage);
-            } else {
-                target.changeHP(this.rollData.attack.damage);
-            }
-            target.addAttackEffects(activeTargetEffects);
-        });
-
-        this.close();
-    }
+  static async _onTakeDamage(event, target) {
+    await this._takeDamage(event);
+  }
 }

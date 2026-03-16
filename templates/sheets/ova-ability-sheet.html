@@ -4,34 +4,33 @@
         <h1 class="flex3"><input name="name" type="text" value="{{item.name}}"
                 placeholder="{{ localize 'OVA.Name' }}" /></h1>
         {{#if isEmbedded}}
-        <div class="item delete-button flex0" data-item-id="{{perk._id}}">
+        <div class="item delete-button flex0" data-item-id="{{item.id}}">
             <a class="item-delete" title="Delete Item"><i class="fas fa-trash"></i></a>
         </div>
         {{/if}}
     </header>
     <h2 class="flavor-header">
         <span>{{ localize 'OVA.Flavor' }}: </span>
-        <input name="data.flavor" value="{{item.data.flavor}}"
+        <input name="system.flavor" value="{{system.flavor}}"
             placeholder="{{ localize 'OVA.Flavor' }}" type="text" />
     </h2>
     <nav class="tabs" data-group="primary-tabs">
         <a class="item" data-tab="description" data-group="primary-tabs">{{localize 'OVA.Description'}}</a>
-        {{#if data.isEmbedded}}
-        {{#if data.isRoot}}
+        {{#if isEmbedded}}
+        {{#if system.isRoot}}
         <a class="item" data-tab="abilities" data-group="primary-tabs">{{localize 'OVA.Ability.NamePlural'}}</a>
         {{/if}}
         {{/if}}
         <a class="item" data-tab="properties" data-group="primary-tabs">{{localize 'OVA.Properties'}}</a>
         <a class="item" data-tab="effects" data-group="primary-tabs">{{ localize 'OVA.Effects.Name' }}</a>
     </nav>
-    {{!-- Ability Fields --}}
     <section class="ova content">
         <div class="tab" data-tab="description" data-group="primary-tabs">
             <div class="description-tab">
                 <div class="description-params">
                     <div class="item-type">
-                        <select name="data.type">
-                            {{#select data.type}}
+                        <select name="system.type">
+                            {{#select system.type}}
                             {{#each config.abilityTypes as |name type|}}
                             <option value="{{type}}">{{localize name}}</option>
                             {{/each}}
@@ -40,28 +39,28 @@
                     </div>
                     <div class="endurance-cost">
                         <span>{{localize 'OVA.EnduranceCost'}}</span>
-                        <input type="text" value="{{data.enduranceCost}}" name="data.enduranceCost"
+                        <input type="text" value="{{system.enduranceCost}}" name="system.enduranceCost"
                             data-dtype="Number" />
                     </div>
                     <div class="limited-use">
                         <span>{{localize 'OVA.LimitedUse.Name'}}</span>
                         <div class="limited-use-values">
-                            <input type="text" value="{{data.limitedUse.value}}" name="data.limitedUse.value"
+                            <input type="text" value="{{system.limitedUse.value}}" name="system.limitedUse.value"
                                 data-dtype="Number" />/
-                            <input type="text" value="{{data.limitedUse.max}}" name="data.limitedUse.max"
+                            <input type="text" value="{{system.limitedUse.max}}" name="system.limitedUse.max"
                                 data-dtype="Number" />
                         </div>
                     </div>
                     <div class="rule-pg">
                         <span class="rulebook-link">{{localize 'OVA.Page.Short'}}</span>
-                        <input name="data.page" value="{{item.data.page}}" type="text" />
+                        <input name="system.page" value="{{system.page}}" type="text" />
                     </div>
                 </div>
                 <div class="flexrow">
                     <div>
                         <h2>{{ localize 'OVA.Description' }}</h2>
                         <div class="description">
-                            {{editor content=item.data.description target="data.description" button=true editable=true}}
+                            {{editor content=system.description target="system.description" button=true editable=true}}
                         </div>
                     </div>
                     {{#if isEmbedded}}
@@ -72,8 +71,8 @@
                 </div>
             </div>
         </div>
-        {{#if data.isEmbedded}}
-        {{#if data.isRoot}}
+        {{#if isEmbedded}}
+        {{#if system.isRoot}}
         <div class="tab" data-tab="abilities" data-group="primary-tabs">
             {{> "systems/ova/templates/parts/ability-list.html" items=abilities }}
         </div>
@@ -90,30 +89,25 @@
                 </tr>
                 <tr>
                     <td>
-                        <input name="data.active" type="checkbox" value="{{data.active}}" data-dtype="Boolean" {{checked
-                            data.active}} />
+                        <input name="system.active" type="checkbox" data-dtype="Boolean" {{checked system.active}} />
                     </td>
                     <td>
-                        <input name="data.passive" type="checkbox" value="{{data.passive}}" data-dtype="Boolean"
-                            {{checked data.passive}} />
+                        <input name="system.passive" type="checkbox" data-dtype="Boolean" {{checked system.passive}} />
                     </td>
                     <td>
-                        <input name="data.isRoot" type="checkbox" value="{{data.isRoot}}" data-dtype="Boolean" {{checked
-                            data.isRoot}} />
+                        <input name="system.isRoot" type="checkbox" data-dtype="Boolean" {{checked system.isRoot}} />
                     </td>
                     <td>
-                        <input name="data.magic" type="checkbox" value="{{data.magic}}" data-dtype="Boolean" {{checked
-                            data.magic}} />
+                        <input name="system.magic" type="checkbox" data-dtype="Boolean" {{checked system.magic}} />
                     </td>
                     <td>
-                        <input name="data.boss" type="checkbox" value="{{data.boss}}" data-dtype="Boolean" {{checked
-                            data.boss}} />
+                        <input name="system.boss" type="checkbox" data-dtype="Boolean" {{checked system.boss}} />
                     </td>
                 </tr>
             </table>
         </div>
         <div class="tab" data-tab="effects" data-group="primary-tabs">
-            {{> "systems/ova/templates/parts/effects.html" effects=data.effects }}
+            {{> "systems/ova/templates/parts/effects.html" effects=system.effects }}
         </div>
     </section>
 </form>

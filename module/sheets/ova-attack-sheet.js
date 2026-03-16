@@ -1,64 +1,79 @@
 import BaseItemSheet from "./base-item-sheet.js";
 
 export default class OVAAttackSheet extends BaseItemSheet {
-    /** @inheritdoc */
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            template: "systems/ova/templates/sheets/ova-attack-sheet.html"
-        });
+
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "attack"],
+    actions: {
+      selectAbility: OVAAttackSheet._onSelectAbility
+    }
+  };
+
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/sheets/ova-attack-sheet.html"
+    }
+  };
+
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    context.config = CONFIG.OVA;
+    context.selected = this.item.system.abilities ?? [];
+
+    context.abilities = (this.item.actor?.items ?? [])
+      .filter(i => i.type === "ability" && i.system.rootId === "")
+      .sort((a, b) => {
+        if (a.system.type === b.system.type) return a.name.localeCompare(b.name);
+        return (a.system.type ?? "").localeCompare(b.system.type ?? "");
+      });
+
+    return context;
+  }
+
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
+
+    this.element.querySelectorAll(".selectable .ability-description")
+      .forEach(el => el.addEventListener("click", this._selectAbility.bind(this)));
+  }
+
+  /** -------------------------------------------- */
+  /** Select Ability                               */
+  /** -------------------------------------------- */
+  _selectAbility(event) {
+    event.preventDefault();
+
+    const dataset = event.currentTarget.closest(".item")?.dataset;
+    if (!dataset) return;
+
+    const selectionId = dataset.itemId;
+    const ability = this.item.actor?.items.get(selectionId);
+    if (ability?.system?.passive) return;
+
+    let selected = foundry.utils.deepClone(this.item.system.abilities ?? []);
+
+    if (selected.includes(selectionId)) {
+      selected = selected.filter(id => id !== selectionId);
+    } else {
+      selected.push(selectionId);
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    this.item.actor?.updateEmbeddedDocuments("Item", [{
+      _id: this.item.id,
+      "system.abilities": selected
+    }]);
+  }
 
-        html.find('.selectable .ability-description').click(this._selectAbility.bind(this));
-    }
-
-    _selectAbility(event) {
-        event.preventDefault();
-
-        var dataset = event.currentTarget.closest(".item").dataset;
-        const selectionId = dataset.itemId;
-        const ability = this.actor.items.find(i => i.id === selectionId);
-        if (ability.data.data.passive) return;
-
-        let selected = this.item.data.data.abilities;
-
-        if (selected.includes(selectionId)) {
-            selected = selected.filter(id => id !== selectionId);
-        } else {
-            selected.push(selectionId);
-        }
-
-        this.actor.updateEmbeddedDocuments("Item", [{ _id: this.item.id, "data.abilities": selected }]);
-    }
-
-    /** @override */
-    getData() {
-        const data = super.getData();
-
-        const itemData = data.data;
-        data.config = CONFIG.OVA;
-
-        data.item = itemData;
-        data.data = itemData.data;
-        data.selected = itemData.data.abilities;
-        data.abilities = this.actor.items.
-            filter(i => i.type === 'ability' && i.data.data.rootId === '').
-            map(a => a.data).
-            sort((a, b) => {
-                // sort by type and name
-                if (a.data.type === b.data.type) {
-                    return a.name.localeCompare(b.name);
-                }
-                return a.type.localeCompare(b.type);
-            });
-
-        return data;
-    }
-
-    /** @override */
-    async _canDragDrop(event) {
-        return true;
-    }
+  static async _onSelectAbility(event, target) {
+    this._selectAbility(event);
+  }
 }

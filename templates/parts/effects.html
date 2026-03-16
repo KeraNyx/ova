@@ -10,7 +10,7 @@
             <div class="flexrow">
                 <label>Effect Type:</label>
                 <div class="effect-type flex0">
-                    <select name="data.effects[{{@index}}].type">
+                    <select name="system.effects[{{@index}}].type">
                         {{#select effect.type}}
                         {{#each ../config.effectTypes as |name type|}}
                         <option value="{{type}}">{{localize name}}</option>
@@ -20,7 +20,7 @@
                 </div>
                 <div class="effect-target flex0">
                     {{#if (eq effect.type "apply-active-effect")}}
-                    <select name="data.effects[{{@index}}].target">
+                    <select name="system.effects[{{@index}}].target">
                         {{#select effect.target}}
                         {{#each ../config.effectTargets as |name target|}}
                         <option value="{{target}}">{{localize name}}</option>
@@ -36,7 +36,7 @@
             <div class="flexrow">
                 <label>Change:</label>
                 <div class="effect-key flex0">
-                    <select name="data.effects[{{@index}}].key">
+                    <select name="system.effects[{{@index}}].key">
                         {{#select effect.key}}
                         {{#if (eq effect.type "apply-active-effect")}}
                         {{#each ../config.activeEffectKeys as |name key|}}
@@ -52,11 +52,11 @@
                 </div>
                 {{#if (maskedKey effect.key)}}
                 <div class="effect-key-value">
-                    <input name="data.effects[{{@index}}].keyValue" type="text" value="{{effect.keyValue}}" />
+                    <input name="system.effects[{{@index}}].keyValue" type="text" value="{{effect.keyValue}}" />
                 </div>
                 {{/if}}
                 <div class="effect-mode flex0">
-                    <select name="data.effects[{{@index}}].mode" data-dtype="Number">
+                    <select name="system.effects[{{@index}}].mode" data-dtype="Number">
                         {{#select effect.mode}}
                         {{#each ../config.activeEffectModes as |name target|}}
                         <option value="{{target}}">{{localize name}}</option>
@@ -68,7 +68,7 @@
             <div class="flexrow">
                 <label>Value:</label>
                 <div class="effect-value">
-                    <input name="data.effects[{{@index}}].value" type="text" value="{{effect.value}}" />
+                    <input name="system.effects[{{@index}}].value" type="text" value="{{effect.value}}" />
                 </div>
             </div>
             {{#if (eq effect.type "apply-active-effect")}}
@@ -76,7 +76,7 @@
             <div class="flexrow">
                 <label>Over Time Effect:</label>
                 <div class="over-time-when flex0">
-                    <select name="data.effects[{{@index}}].overTime.when">
+                    <select name="system.effects[{{@index}}].overTime.when">
                         {{#select effect.overTime.when}}
                         {{#each ../config.overTimeModes as |name value|}}
                         <option value="{{value}}">{{localize name}}</option>
@@ -88,7 +88,7 @@
             <div class="flexrow">
                 <div></div>
                 <div class="over-time-key flex0">
-                    <select name="data.effects[{{@index}}].overTime.key">
+                    <select name="system.effects[{{@index}}].overTime.key">
                         {{#select effect.overTime.key}}
                         {{#each ../config.overTimeEffect as |name key|}}
                         <option value="{{key}}">{{localize name}}</option>
@@ -97,7 +97,7 @@
                     </select>
                 </div>
                 <div class="over-time-mode flex0">
-                    <select name="data.effects[{{@index}}].overTime.mode" data-dtype="Number">
+                    <select name="system.effects[{{@index}}].overTime.mode" data-dtype="Number">
                         {{#select effect.overTime.mode}}
                         {{#each ../config.activeEffectModes as |name value|}}
                         <option value="{{value}}">{{localize name}}</option>
@@ -109,7 +109,7 @@
             <div class="flexrow">
                 <label>Value:</label>
                 <div class="over-time-value">
-                    <input name="data.effects[{{@index}}].overTime.value" type="text"
+                    <input name="system.effects[{{@index}}].overTime.value" type="text"
                         value="{{effect.overTime.value}}" />
                 </div>
             </div>
@@ -118,7 +118,7 @@
             <div class="form-group">
                 <label>Priority:</label>
                 <div class="effect-priority">
-                    <input name="data.effects[{{@index}}].priority" type="text" value="{{effect.priority}}" />
+                    <input name="system.effects[{{@index}}].priority" type="text" value="{{effect.priority}}" />
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@
         <h1 class="flex3"><input name="name" type="text" value="{{item.name}}"
                 placeholder="{{ localize 'OVA.Name' }}" /></h1>
         {{#if isEmbedded}}
-        <div class="item delete-button flex0" data-item-id="{{perk._id}}">
+        <div class="item delete-button flex0" data-item-id="{{item.id}}">
             <a class="item-delete" title="Delete Item"><i class="fas fa-trash"></i></a>
         </div>
         {{/if}}
@@ -22,7 +22,7 @@
                         <div>
                             <h2>{{ localize 'OVA.Description' }}</h2>
                             <div class="description">
-                                {{editor content=item.data.description target="data.description" button=true editable=true}}
+                                {{editor content=system.description target="system.description" button=true editable=true}}
                             </div>
                         </div>
                     </div>

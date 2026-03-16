@@ -1,13 +1,13 @@
 <div class="dialog-content">
     <form class="sheet">
         <header class="sheet-header">
-            <h1><input name="name" type="text" value="{{effect.label}}" placeholder="{{ localize 'OVA.Name' }}" /></h1>
+            <h1><input name="name" type="text" value="{{effect.name}}" placeholder="{{ localize 'OVA.Name' }}" /></h1>
         </header>
         <div class="effect">
             <div class="flexrow flex-bottom">
                 <div class="effect-key flex0">
                     <label for="effect-key">Change:</label>
-                    <select  id="effect-key" class="effect-key-select" name="effect.key">
+                    <select id="effect-key" class="effect-key-select" name="effect.key">
                         {{#select effect.key}}
                         {{#each config.activeEffectKeys as |name key|}}
                         <option value="{{key}}">{{localize name}}</option>
@@ -77,13 +77,8 @@
                 </div>
             </div>
         </div>
+        <div class="dialog-buttons">
+            <button type="button" data-action="submitEffect">{{localize "OVA.Confirm"}}</button>
+        </div>
     </form>
-</div>
-<div class="clickable dialog-buttons">
-    {{#each buttons as |button id|}}
-    <button class="dialog-button {{cssClass}}" data-button="{{id}}">
-        {{{button.icon}}}
-        {{{button.label}}}
-    </button>
-    {{/each}}
 </div>

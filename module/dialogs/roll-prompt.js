@@ -1,162 +1,186 @@
+import OVADie from "../dice/ova-die.js";
+
 const sizeMods = {
-    'disadvantage': -5,
-    'normal': 0,
-    'advantage': 5,
-}
+  disadvantage: -5,
+  normal: 0,
+  advantage: 5,
+};
 
-export default class RollPrompt extends Dialog {
-    resolve = null;
-    constructor(title, type, actor, attack, enduranceCost, roll = 2) {
-        const defenseButtons = {
-            '0': {
-                label: '0',
-                callback: html => this._roll(html, 0),
-            },
-            'roll': {
-                icon: '<i class="fas fa-dice"></i>',
-                label: game.i18n.localize('OVA.MakeRoll'),
-                callback: html => this._roll(html, 1),
-            },
-            'double': {
-                label: 'x2',
-                callback: html => this._roll(html, 2),
-            }
-        }
+export default class RollPrompt extends foundry.applications.api.ApplicationV2 {
+  resolve = null;
 
-        const stdButtons = {
-            roll: {
-                icon: '<i class="fas fa-dice"></i>',
-                label: game.i18n.localize('OVA.MakeRoll'),
-                callback: html => this._roll(html, 1)
-            }
-        }
+  constructor(title, type, actor, attack, enduranceCost, roll = 2) {
+    super({ window: { title } });
 
-        const dramaButtons = {
-            drama: {
-                icon: '<i class="fas fa-dice"></i>',
-                label: game.i18n.localize('OVA.Roll.Drama') + ' (5)',
-                callback: html => this._roll(html, 1)
-            },
-            miracle: {
-                icon: '<i class="fas fa-dice"></i>',
-                label: game.i18n.localize('OVA.Roll.Miracle') + ' (30)',
-                callback: html => this._roll(html, 6)
-            }
-        }
+    this.actor = actor;
+    this.type = type;
+    this.roll = roll;
+    this.enduranseSelection = "base";
+    this.sizeSelection = "normal";
+    this.attack = attack;
+    this._baseEnduranceCost = enduranceCost;
+  }
 
-        let buttons = type === 'drama' ? dramaButtons : stdButtons;
-        buttons = type === 'defense' ? defenseButtons : buttons;
-        let defButton = type === 'drama' ? 'drama' : 'roll';
+  /** -------------------------------------------- */
+  /** Default Options                              */
+  /** -------------------------------------------- */
+  static DEFAULT_OPTIONS = {
+    classes: ["ova", "roll-prompt"],
+    position: { width: 400 },
+    window: { resizable: false },
+    actions: {
+      roll: RollPrompt._onRoll,
+      rollDouble: RollPrompt._onRollDouble,
+      rollZero: RollPrompt._onRollZero,
+      rollDrama: RollPrompt._onRollDrama,
+      rollMiracle: RollPrompt._onRollMiracle,
+      selectSize: RollPrompt._onSelectSize,
+      selectEndurancePool: RollPrompt._onSelectEndurancePool
+    }
+  };
 
-        const dialogData = {
-            title: title,
-            content: "html",
-            buttons: buttons,
-            default: defButton,
-            close: () => this._close,
-        };
-        super(dialogData, {});
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/dialogs/roll-dialog.html"
+    }
+  };
 
-        this.actor = actor;
-        this.type = type;
-        this.enduranceCost = enduranceCost;
-        this.roll = roll;
-        this.enduranseSelection = "base";
-        this.sizeSelection = "normal";
-        this.attack = attack;
+  /** -------------------------------------------- */
+  /** Context Data                                 */
+  /** -------------------------------------------- */
+  async _prepareContext(options) {
+    const context = await super._prepareContext(options);
+    context.actor = this.actor;
+    context.type = this.type;
+    context.sizeSelection = this.sizeSelection;
+    context.enduranseSelection = this.enduranseSelection;
+    context.enduranceCost = this.type === "drama" && this._baseEnduranceCost > 0
+      ? `${this._baseEnduranceCost}/${this._baseEnduranceCost * 6}`
+      : this._baseEnduranceCost;
+    return context;
+  }
+
+  /** -------------------------------------------- */
+  /** Event Listeners                              */
+  /** -------------------------------------------- */
+  _onRender(context, options) {
+    super._onRender(context, options);
+
+    this.element.querySelector("#endurance-cost")
+      ?.addEventListener("input", this._changeEnduranceCost.bind(this));
+
+    this.element.querySelectorAll(".size[data-selection]")
+      .forEach(el => el.addEventListener("click", this._selectSize.bind(this)));
+
+    this.element.querySelectorAll(".enduranse-pool[data-selection]")
+      .forEach(el => el.addEventListener("click", this._selectEnduransePool.bind(this)));
+  }
+
+  /** -------------------------------------------- */
+  /** Input Handlers                               */
+  /** -------------------------------------------- */
+  _changeEnduranceCost(e) {
+    e.preventDefault();
+    this._baseEnduranceCost = parseInt(e.currentTarget.value);
+  }
+
+  _selectSize(e) {
+    e.preventDefault();
+    this.sizeSelection = e.currentTarget.dataset.selection;
+    this.render();
+  }
+
+  _selectEnduransePool(e) {
+    e.preventDefault();
+    this.enduranseSelection = e.currentTarget.dataset.selection;
+    this.render();
+  }
+
+  /** -------------------------------------------- */
+  /** Close Handler                                */
+  /** -------------------------------------------- */
+  async close(options = {}) {
+    this.resolve?.(false);
+    return super.close(options);
+  }
+
+  /** -------------------------------------------- */
+  /** Roll Logic                                   */
+  /** -------------------------------------------- */
+  async _roll(multiplier) {
+    let mod = parseInt(this.element.querySelector("#roll-modifier")?.value) || 0;
+    let rollValue = this.roll + mod + sizeMods[this.sizeSelection];
+    let negativeDice = false;
+
+    if (rollValue <= 0) {
+      negativeDice = true;
+      rollValue = 2 - rollValue;
     }
 
-    get template() {
-        return 'systems/ova/templates/dialogs/roll-dialog.html';
-    }
+    rollValue = negativeDice && multiplier !== 0
+      ? Math.ceil(rollValue / multiplier)
+      : rollValue * multiplier;
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    const dice = await this._makeRoll(rollValue, negativeDice);
 
-        html.find('#endurance-cost').on('input', this._changeEnduranceCost.bind(this));
-        html.find('.size[data-selection]').click(this._selectSize.bind(this));
-        html.find('.enduranse-pool[data-selection]').click(this._selectEnduransePool.bind(this));
-    }
+    this.resolve?.({ dice, roll: rollValue });
 
-    _changeEnduranceCost(e) {
-        e.preventDefault();
-        this.enduranceCost = parseInt(e.currentTarget.innerHTML);
-    }
+    let effectiveCost = this._baseEnduranceCost;
+    if (this.type === "drama") effectiveCost *= multiplier;
 
-    _selectSize(e) {
-        e.preventDefault();
-        const size = $(e.currentTarget).data('selection');
-        this.sizeSelection = size;
-        this.render(true);
-    }
-    _selectEnduransePool(e) {
-        e.preventDefault();
-        const enduransePool = $(e.currentTarget).data('selection');
-        this.enduranseSelection = enduransePool;
-        this.render(true);
-    }
+    this.actor?.changeEndurance?.(
+      -effectiveCost,
+      this.enduranseSelection === "reserve"
+    );
 
-    getData() {
-        const data = super.getData();
-        data.actor = this.actor;
-        data.enduranceCost = this.enduranceCost;
+    await this.close();
+  }
 
-        if (this.type === 'drama' && data.enduranceCost > 0) {
-            data.enduranceCost = `${this.enduranceCost}/${this.enduranceCost * 6}`;
-        }
-        data.enduranseSelection = this.enduranseSelection;
-        data.type = this.type;
-        data.sizeSelection = this.sizeSelection;
+  async _makeRoll(roll, negative = false) {
+    const formula = negative ? `${roll}d6kl` : `${roll}d6khs`;
+    const dice = new Roll(formula);
+    await dice.evaluate();
+    return dice;
+  }
 
+  /** -------------------------------------------- */
+  /** Static Action Handlers                       */
+  /** -------------------------------------------- */
+  static async _onRoll(event, target) {
+    await this._roll(1);
+  }
 
-        return data;
-    }
+  static async _onRollDouble(event, target) {
+    await this._roll(2);
+  }
 
-    _close() {
-        this.resolve(false);
-    }
+  static async _onRollZero(event, target) {
+    await this._roll(0);
+  }
 
-    _roll(html, mul) {
-        let mod = parseInt(html.find('#roll-modifier').val());
-        if (isNaN(mod)) mod = 0;
+  static async _onRollDrama(event, target) {
+    await this._roll(1);
+  }
 
-        let roll = this.roll + mod + sizeMods[this.sizeSelection];
-        let negativeDice = false;
-        if (roll <= 0) {
-            negativeDice = true;
-            roll = 2 - roll;
-        }
+  static async _onRollMiracle(event, target) {
+    await this._roll(6);
+  }
 
-        roll = negativeDice && mul != 0 ? Math.ceil(roll / mul) : roll * mul;
+  static async _onSelectSize(event, target) {
+    this.sizeSelection = target.dataset.selection;
+    this.render();
+  }
 
-        const dice = this._makeRoll(roll, negativeDice);
+  static async _onSelectEndurancePool(event, target) {
+    this.enduranseSelection = target.dataset.selection;
+    this.render();
+  }
 
-        this.resolve && this.resolve({
-            dice: dice,
-            roll: roll,
-        });
-        // drama dice enduranse cost set for each die
-        if (this.type === 'drama') {
-            this.enduranceCost = this.enduranceCost * mul;
-        }
-        this.actor.changeEndurance(-this.enduranceCost, this.enduranseSelection === "reserve");
-    }
-
-    _makeRoll(roll, negative = false) {
-        // roll dice
-        let dice;
-        if (negative) {
-            dice = new Roll(`${roll}d6kl`);
-        } else {
-            dice = new Roll(`${roll}d6khs`);
-        }
-        dice.evaluate({ async: false })
-
-        return dice;
-    }
-
-    async show() {
-        this.render(true);
-        return new Promise(resolve => this.resolve = resolve);
-    }
+  /** -------------------------------------------- */
+  /** Show Promise                                 */
+  /** -------------------------------------------- */
+  async show() {
+    this.render(true);
+    return new Promise(resolve => this.resolve = resolve);
+  }
 }

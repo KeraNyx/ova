@@ -1,20 +1,32 @@
-export default class OVATokenHUD extends TokenHUD {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "token-hud",
-            template: "systems/ova/templates/token/token-hud.html"
-        });
-    }
+export default class OVATokenHUD extends foundry.applications.hud.TokenHUD {
 
-    activateListeners(html) {
-        super.activateListeners(html);
+  static DEFAULT_OPTIONS = {
+    id: "token-hud",
+  };
 
-        html.find('[data-action="trigger-effects"]').click(this._triggerActiveEffects.bind(this));
+  static PARTS = {
+    body: {
+      template: "systems/ova/templates/token/token-hud.html"
     }
+  };
 
-    _triggerActiveEffects(event) {
-        event.preventDefault();
-        const targets = canvas.tokens.controlled.map(t => t.actor);
-        targets.forEach(t => t.triggerOverTimeEffects());
+  _onRender(context, options) {
+    super._onRender(context, options);
+
+    this.element
+      .querySelector('[data-action="trigger-effects"]')
+      ?.addEventListener("click", this._triggerActiveEffects.bind(this));
+  }
+
+  _triggerActiveEffects(event) {
+    event.preventDefault();
+
+    const targets = canvas.tokens.controlled
+      .map(t => t.actor)
+      .filter(Boolean);
+
+    for (const actor of targets) {
+      actor.triggerOverTimeEffects?.();
     }
+  }
 }
