@@ -4,91 +4,104 @@
   "description": "System for playing Open Versatile Anime Role-Playing Game (OVA)",
   "version": "0.1",
   "compatibility": {
-    "minimum": 11,
+    "minimum": "9",
     "verified": "13"
   },
   "authors": [
     {
       "name": "Deathkitten",
-      "discord": "deathkittenkera"
+      "discord": "deathkittenkera",
+      "flags": {}
     }
   ],
-  "documentTypes": {
-    "Actor": {
-      "types": ["character", "npc"]
-    },
-    "Item": {
-      "types": ["ability", "weakness", "perk", "flaw", "attack", "spell"]
-    }
-  },
   "esmodules": [
     "ova.js"
   ],
   "styles": [
-    "ova.css"
+    {
+      "src": "ova.css"
+    }
   ],
   "packs": [
     {
       "label": "Abilities",
       "type": "Item",
       "name": "abilities",
-      "path": "packs/abilities.db",
+      "path": "packs/abilities",
       "system": "ova",
-      "package": "ova",
-      "entity": "Item"
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
     },
     {
       "label": "Weaknesses",
       "type": "Item",
       "name": "weaknesses",
-      "path": "packs/weaknesses.db",
+      "path": "packs/weaknesses",
       "system": "ova",
-      "package": "ova",
-      "entity": "Item"
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
     },
     {
       "label": "Perks",
       "type": "Item",
       "name": "perks",
-      "path": "packs/perks.db",
+      "path": "packs/perks",
       "system": "ova",
-      "package": "ova",
-      "entity": "Item"
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
     },
     {
       "label": "Flaws",
       "type": "Item",
       "name": "flaws",
-      "path": "packs/flaws.db",
+      "path": "packs/flaws",
       "system": "ova",
-      "package": "ova",
-      "entity": "Item"
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
     },
     {
       "label": "Boss Abilities",
       "type": "Item",
       "name": "boss-abilities",
-      "path": "packs/boss-abilities.db",
+      "path": "packs/boss-abilities",
       "system": "ova",
-      "package": "ova",
-      "entity": "Item"
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {}
     }
   ],
   "languages": [
     {
       "lang": "en",
       "name": "English",
-      "path": "lang/en.json"
+      "path": "lang/en.json",
+      "flags": {}
     },
     {
       "lang": "ru",
       "name": "Русский",
-      "path": "lang/ru.json"
+      "path": "lang/ru.json",
+      "flags": {}
     }
   ],
   "socket": true,
   "url": "https://github.com/KeraNyx/ova",
-  "manifest": "https://raw.githubusercontent.com/KeraNyx/ova/master/system.json",
+  "manifest": "https://github.com/KeraNyx/ova/blob/master/system.json",
   "download": "https://github.com/KeraNyx/ova/archive/master/ova-master.zip",
-  "license": "LICENSE.txt"
+  "license": "LICENSE.txt",
+  "flags": {}
 }

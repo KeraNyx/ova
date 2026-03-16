@@ -12,12 +12,12 @@ export default class RollPrompt extends Dialog {
     constructor(title, type, actor, attack, enduranceCost, roll = 2) {
         const defenseButtons = {
             '0': { label: '0', callback: html => this._roll(html, 0) },
-            roll: { icon: '<i class="fas fa-dice"></i>', label: game.i18n.localize('OVA.MakeRoll'), callback: html => this._roll(html, 1) },
+            roll: { icon: '<i class="fas fa-dice"></i>', label: game.i18n.localize('OVA.keepHighestSum'), callback: html => this._roll(html, 1) },
             double: { label: 'x2', callback: html => this._roll(html, 2) },
         };
 
         const stdButtons = {
-            roll: { icon: '<i class="fas fa-dice"></i>', label: game.i18n.localize('OVA.MakeRoll'), callback: html => this._roll(html, 1) },
+            roll: { icon: '<i class="fas fa-dice"></i>', label: game.i18n.localize('OVA.keepHighestSum'), callback: html => this._roll(html, 1) },
         };
 
         const dramaButtons = {
