@@ -25,8 +25,8 @@ Hooks.once("init", function () {
 
     game.CombatTracker = CombatTracker;
 
-    CONFIG.OVA = OVA;
-    CONFIG.statusEffects = configureStatusEffects();
+  // Replace combat tracker
+  //CONFIG.ui.combat = CombatTracker;
 
     CONFIG.Item.documentClass = OVAItem;
     CONFIG.Actor.documentClass = OVACharacter;
