@@ -9,6 +9,10 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
     classes: ["ova"],
     position: { width: 630, height: 460 },
     window: { resizable: true },
+    form: {
+        submitOnChange: true,
+        closeOnSubmit: false,
+    },
     actions: {
       openRulebook: BaseItemSheet._onOpenRulebook,
       addEffect: BaseItemSheet._onAddEffect,

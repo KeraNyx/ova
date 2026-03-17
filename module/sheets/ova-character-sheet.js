@@ -11,10 +11,14 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
   /** -------------------------------------------- */
   /** Default Options                              */
   /** -------------------------------------------- */
-  static DEFAULT_OPTIONS = {
+static DEFAULT_OPTIONS = {
     classes: ["ova", "character"],
     position: { width: 720, height: 600 },
     window: { resizable: true },
+    form: {
+        submitOnChange: true,
+        closeOnSubmit: false,
+    },
     actions: {
       editItem: OVACharacterSheet._onEditItem,
       selectAbility: OVACharacterSheet._onSelectAbility,
