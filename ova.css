@@ -887,3 +887,15 @@ input.experience {
     font-family: "Font Awesome 6 Free" !important;
     font-weight: 900 !important;
 }
+
+/* Delete dialog text */
+.dialog .dialog-content,
+.application .dialog-content,
+.application .window-content p {
+    color: #000;
+}
+
+/* Foundry V13 core delete confirmation */
+.application p {
+    color: #000;
+}

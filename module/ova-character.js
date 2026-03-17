@@ -102,7 +102,7 @@ export default class OVACharacter extends Actor {
 
     /* ---- normalize core pools ---- */
     s.hp = foundry.utils.mergeObject(
-      { value: 0, max: 0 },
+      { value: 40, max: 40 },
       s.hp ?? {}
     );
 
@@ -112,7 +112,7 @@ export default class OVACharacter extends Actor {
     );
 
     s.endurance = foundry.utils.mergeObject(
-      { value: 0, max: 0, penalty: 0 },
+      { value: 40, max: 40, penalty: 0 },
       s.endurance ?? {}
     );
 
