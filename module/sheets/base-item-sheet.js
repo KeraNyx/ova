@@ -85,7 +85,15 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
         .forEach(el => el.addEventListener("contextmenu",
           this.item.actor.sheet._editItem.bind(this.item.actor.sheet)));
     }
-  }
+    // Auto-save on input change
+    this.element.querySelectorAll("input, select, textarea")
+      .forEach(el => el.addEventListener("change", async (ev) => {
+        const form = this.element.querySelector("form");
+        if (!form) return;
+        const formData = new FormDataExtended(form);
+        await this.item.update(formData.object);
+      }));
+    }
 
   /** -------------------------------------------- */
   /** Open Rulebook                                */
