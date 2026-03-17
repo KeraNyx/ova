@@ -874,3 +874,16 @@ input.experience {
 .rulebook-link:hover {
     text-shadow: 0 0 8px var(--color-shadow-primary);
 }
+
+.application .window-header a.header-control,
+.application .window-header button.header-control {
+    background: none;
+    border: none;
+    color: #f0f0e0;
+}
+
+.application .window-header a.header-control i,
+.application .window-header button.header-control i {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
