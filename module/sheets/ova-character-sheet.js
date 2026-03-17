@@ -16,8 +16,9 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
     position: { width: 720, height: 600 },
     window: { resizable: true },
     form: {
-        submitOnChange: true,
-        closeOnSubmit: false,
+      handler: OVACharacterSheet._onSubmitForm,
+      submitOnChange: true,
+      closeOnSubmit: false,
     },
     actions: {
       editItem: OVACharacterSheet._onEditItem,
@@ -30,10 +31,6 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
       removeEffect: OVACharacterSheet._onRemoveEffect
     }
   };
-
-  async _onSubmit(event, form, formData) {
-      await this.actor.update(formData.object);
-  }
 
   static PARTS = {
     body: {
@@ -99,6 +96,13 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
     context.weaknesses.sort((a, b) => a.name.localeCompare(b.name));
 
     return context;
+  }
+
+  /** -------------------------------------------- */
+  /** Form Submission                              */
+  /** -------------------------------------------- */
+  static async _onSubmitForm(event, form, formData) {
+    await this.actor.update(formData.object);
   }
 
   /** -------------------------------------------- */
@@ -204,7 +208,6 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
     event.preventDefault();
     const item = this.actor.items.get(this._getItemId(event));
     if (!item) return;
-    // Delegate to item or roll prompt as needed
     item.sheet?.render(true);
   }
 

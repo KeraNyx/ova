@@ -10,8 +10,9 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
     position: { width: 630, height: 460 },
     window: { resizable: true },
     form: {
-        submitOnChange: true,
-        closeOnSubmit: false,
+      handler: BaseItemSheet._onSubmitForm,
+      submitOnChange: true,
+      closeOnSubmit: false,
     },
     actions: {
       openRulebook: BaseItemSheet._onOpenRulebook,
@@ -22,31 +23,10 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
     },
     dragDrop: [{ dropSelector: ".perks" }, { dropSelector: ".items" }]
   };
-  
-  async _onSubmit(event, form, formData) {
-      const formattedData = Object.entries(formData.object).reduce((acc, [key, value]) => {
-          const match = key.match(/\[(\d+)\]/);
-          if (match) {
-              const index = parseInt(match[1]);
-              const objectName = key.split(`[${index}]`)[0];
-              const keyName = key.split(`[${index}].`)[1];
-              acc[objectName] = acc[objectName] || [];
-              acc[objectName][index] = acc[objectName][index] || {};
-              foundry.utils.setProperty(acc[objectName][index], keyName, value);
-          } else {
-              acc[key] = value;
-          }
-          return acc;
-      }, {});
-      await this.item.update(formattedData);
-  }
 
-  /** -------------------------------------------- */
-  /** Tabs                                         */
-  /** -------------------------------------------- */
   static PARTS = {
     tabs: { template: "templates/generic/tab-navigation.hbs" },
-    body: { template: "" } // subclasses should override
+    body: { template: "" }
   };
 
   tabGroups = {
@@ -67,7 +47,28 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
   }
 
   _getTabs() {
-    return {};  // subclasses should override if needed
+    return {};
+  }
+
+  /** -------------------------------------------- */
+  /** Form Submission                              */
+  /** -------------------------------------------- */
+  static async _onSubmitForm(event, form, formData) {
+    const formattedData = Object.entries(formData.object).reduce((acc, [key, value]) => {
+      const match = key.match(/\[(\d+)\]/);
+      if (match) {
+        const index = parseInt(match[1]);
+        const objectName = key.split(`[${index}]`)[0];
+        const keyName = key.split(`[${index}].`)[1];
+        acc[objectName] = acc[objectName] || [];
+        acc[objectName][index] = acc[objectName][index] || {};
+        foundry.utils.setProperty(acc[objectName][index], keyName, value);
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+    await this.item.update(formattedData);
   }
 
   /** -------------------------------------------- */
@@ -153,28 +154,5 @@ export default class BaseItemSheet extends foundry.applications.api.HandlebarsAp
     }
 
     return true;
-  }
-
-  /** -------------------------------------------- */
-  /** Form Submission                              */
-  /** -------------------------------------------- */
-  async _processFormData(event, form, formData) {
-    const formattedData = Object.entries(formData.object).reduce((acc, [key, value]) => {
-      const match = key.match(/\[(\d+)\]/);
-      if (match) {
-        const index = parseInt(match[1]);
-        const objectName = key.split(`[${index}]`)[0];
-        const keyName = key.split(`[${index}].`)[1];
-        acc[objectName] = acc[objectName] || [];
-        acc[objectName][index] = acc[objectName][index] || {};
-        foundry.utils.setProperty(acc[objectName][index], keyName, value);
-      } else {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
-
-    return super._processFormData(event, form, 
-      new FormDataExtended(form, { object: formattedData }));
   }
 }
