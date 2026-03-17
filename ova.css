@@ -163,7 +163,8 @@
 .ability-title {
     margin: 0;
     margin-left: 1em;
-    text-transform: uppercase
+    text-transform: uppercase;
+    color: #731d20 !important;
 }
 
 .attack-description {
@@ -194,6 +195,14 @@
 }
 
 .application .window-header .header-control i {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+.application .window-header .header-controls button {
+    background: transparent;
+    border: none;
+    color: #f0f0e0;
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
 }
@@ -233,6 +242,7 @@ input.character-name {
     background-color: white;
     height: 1.3em;
     font-size: 20pt;
+    color: #000;
 }
 
 .portrait-title {
@@ -474,6 +484,10 @@ input.combat-side-value {
     padding-top: .5em;
 }
 
+.combat-effects h3 {
+    color: #731d20;
+}
+
 .reserve-block {
     position: absolute;
     right: 0px;
@@ -498,7 +512,7 @@ input.combat-side-value {
 }
 
 .drama-dice-name {
-    color: #731d20;
+    color: #731d20 !important;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 1.2em;
@@ -508,6 +522,7 @@ input.combat-side-value {
 .free-drama-dice {
     text-transform: lowercase;
     font-size: .8em;
+    color: #731d20 !important;
 }
 
 .drama-dice {
