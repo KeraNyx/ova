@@ -134,7 +134,11 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
 
     this.element.querySelectorAll(".effect-delete")
       .forEach(el => el.addEventListener("click", ev => this._removeEffect(ev)));
-     // Auto-save on input change
+
+    this.element.querySelectorAll(".add-attack")
+      .forEach(el => el.addEventListener("click", ev => this.actor.createAttack()));
+
+    // Auto-save on input change
     this.element.querySelectorAll("input, select, textarea")
       .forEach(el => el.addEventListener("change", async (ev) => {
         const form = this.element.querySelector("form");
