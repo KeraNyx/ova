@@ -899,3 +899,9 @@ input.experience {
 .application p {
     color: #000;
 }
+
+.character-name-container input,
+.character-name-container label,
+.character-name-container div {
+    color: white;
+}
