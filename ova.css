@@ -903,5 +903,5 @@ input.experience {
 .character-name-container input,
 .character-name-container label,
 .character-name-container div {
-    color: white;
+    color: #000;
 }
