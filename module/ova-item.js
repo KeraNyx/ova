@@ -71,6 +71,12 @@ export default class OVAItem extends Item {
 
   _preparePerks() {
     const perks = this.system.perks ?? [];
+
+    this.perks = [];
+    this.ovaEffects = [];
+    this.combinedPerks = [];
+    this.enduranceCost = this.system.enduranceCost ?? 0;
+
     if (!perks.length) return;
 
     const actorPerks = this.actor.items
@@ -79,8 +85,6 @@ export default class OVAItem extends Item {
     actorPerks.sort((a, b) => a.name.localeCompare(b.name));
 
     this.perks = actorPerks;
-    this.ovaEffects = [];
-    this.combinedPerks = [];
 
     let enduranceCost = this.system.enduranceCost ?? 0;
 
@@ -118,6 +122,8 @@ export default class OVAItem extends Item {
   }
 
   _prepareSpellData() {
+    if (!this.ovaEffects) this.ovaEffects = [];
+
     const selectedAbilities = this._getRollAbilities();
     const magicAbility = selectedAbilities.find(a => a.system.magic);
 
@@ -135,6 +141,9 @@ export default class OVAItem extends Item {
   }
 
   _prepareAttackData() {
+    if (!this.ovaEffects) this.ovaEffects = [];
+    if (!this.enduranceCost) this.enduranceCost = 0;
+
     const abilities = this._getRollAbilities();
     this._linkedAbilities = abilities;
 
@@ -173,6 +182,8 @@ export default class OVAItem extends Item {
   }
 
   _prepareAbilityData() {
+    if (!this.ovaEffects) this.ovaEffects = [];
+
     const data = this.system;
     data.level.mod = 0;
 
