@@ -905,3 +905,9 @@ input.experience {
 .character-name-container div {
     color: #000;
 }
+
+.combat-cell-value,
+input[type="text"].combat-cell-value,
+.combat-side-value.combat-cell-value {
+    color: #000;
+}
