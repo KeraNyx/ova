@@ -911,3 +911,7 @@ input[type="text"].combat-cell-value,
 .combat-side-value.combat-cell-value {
     color: #000;
 }
+
+.add-active-effect {
+    color: #731d20;
+}
