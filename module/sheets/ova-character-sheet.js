@@ -136,14 +136,17 @@ export default class OVACharacterSheet extends foundry.applications.api.Handleba
       .forEach(el => el.addEventListener("click", ev => this._removeEffect(ev)));
 
     this.element.querySelectorAll(".add-attack")
-      .forEach(el => el.addEventListener("click", ev => this.actor.createAttack()));
+      .forEach(el => el.addEventListener("click", async (ev) => {
+        await this.actor.createAttack();
+        this.render();
+      }));
 
     // Auto-save on input change
     this.element.querySelectorAll("input, select, textarea")
       .forEach(el => el.addEventListener("change", async (ev) => {
         const form = this.element.querySelector("form");
         if (!form) return;
-        const formData = new FormDataExtended(form);
+        const formData = new foundry.applications.ux.FormDataExtended(form);
         await this.actor.update(formData.object);
       }));
   }
