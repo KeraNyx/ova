@@ -88,7 +88,7 @@ export default class AddActiveEffectPrompt extends foundry.applications.api.Hand
   static async _onSubmitEffect(event, target) {
     const form = this.element.querySelector("form");
     if (!form) return;
-    const formData = new FormDataExtended(form);
+    const formData = new foundry.applications.ux.FormDataExtended(form);
     await this._onSubmit(event, form, formData);
   }
 }
